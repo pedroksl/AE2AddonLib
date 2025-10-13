@@ -1,7 +1,13 @@
 package net.pedroksl.ae2addonlib.registry;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Supplier;
+
+import com.mojang.logging.LogUtils;
+
+import org.slf4j.Logger;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -19,44 +25,46 @@ import appeng.core.definitions.BlockDefinition;
 import appeng.core.definitions.ItemDefinition;
 import appeng.items.AEBaseItem;
 
-public class AddonCreativeTab {
+public class CreativeTabRegistry {
+    public static final Logger LOG = LogUtils.getLogger();
 
-    static AddonCreativeTab INSTANCE;
-    private final DeferredRegister<CreativeModeTab> DR;
+    private static final Map<String, DeferredRegister<CreativeModeTab>> DRMap = new HashMap<>();
+    private final String modId;
 
-    public AddonCreativeTab(String modId, Component title, Supplier<ItemStack> icon) {
-        if (INSTANCE != null && FMLEnvironment.dist.isClient()) {
-            throw new IllegalStateException("Tried to initialize Creative Tab on Client Dist.");
+    public CreativeTabRegistry(String modId, Component title, Supplier<ItemStack> icon) {
+        if (DRMap.containsKey(modId) && FMLEnvironment.dist.isClient()) {
+            LOG.error("Tried to initialize CreativeTabRegistry on Client Dist with mod id {}", modId);
+            throw new IllegalStateException();
         }
 
-        INSTANCE = this;
-
-        DR = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, modId);
-
-        DR.register("tab", () -> CreativeModeTab.builder()
+        this.modId = modId;
+        var dr = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, modId);
+        dr.register("tab", () -> CreativeModeTab.builder()
                 .title(title)
                 .icon(icon)
-                .displayItems(AddonCreativeTab::populateTab)
+                .displayItems((p, o) -> CreativeTabRegistry.populateTab(modId, p, o))
                 .build());
+
+        DRMap.put(modId, dr);
     }
 
-    private static AddonCreativeTab getInstance() {
-        if (INSTANCE == null) {
-            throw new IllegalStateException("Item Registration is not initialized.");
+    static DeferredRegister<CreativeModeTab> getDR(String modId) {
+        var dr = DRMap.getOrDefault(modId, null);
+        if (dr == null) {
+            LOG.error("Tried to access uninitialized deferred register with mod id {}", modId);
+            throw new IllegalStateException();
         }
-        return INSTANCE;
+        return dr;
     }
 
-    static DeferredRegister<CreativeModeTab> getDR() {
-        return getInstance().DR;
-    }
-
-    private static void populateTab(CreativeModeTab.ItemDisplayParameters params, CreativeModeTab.Output output) {
+    private static void populateTab(
+            String modId, CreativeModeTab.ItemDisplayParameters params, CreativeModeTab.Output output) {
         var itemDefs = new ArrayList<ItemDefinition<?>>();
-        itemDefs.addAll(AddonItems.getItems());
-        itemDefs.addAll(
-                AddonBlocks.getBlocks().stream().map(BlockDefinition::item).toList());
-        itemDefs.addAll(AddonFluids.getFluids().stream()
+        itemDefs.addAll(ItemRegistry.getItems(modId));
+        itemDefs.addAll(BlockRegistry.getBlocks(modId).stream()
+                .map(BlockDefinition::item)
+                .toList());
+        itemDefs.addAll(FluidRegistry.getFluids(modId).stream()
                 .map(FluidDefinition::bucketItemId)
                 .toList());
 
@@ -77,6 +85,6 @@ public class AddonCreativeTab {
     }
 
     public void register(IEventBus eventBus) {
-        getDR().register(eventBus);
+        getDR(this.modId).register(eventBus);
     }
 }

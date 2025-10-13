@@ -1,10 +1,12 @@
 package net.pedroksl.ae2addonlib.registry;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
+
+import com.mojang.logging.LogUtils;
+
+import org.slf4j.Logger;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
@@ -21,41 +23,49 @@ import appeng.core.definitions.BlockDefinition;
 import appeng.core.definitions.DeferredBlockEntityType;
 
 @SuppressWarnings("unused")
-public class AddonBlockEntities {
+public class BlockEntityRegistry {
+    public static final Logger LOG = LogUtils.getLogger();
 
-    static AddonBlockEntities INSTANCE;
-    private final DeferredRegister<BlockEntityType<?>> DR;
-    private static final List<DeferredBlockEntityType<?>> BLOCK_ENTITY_TYPES = new ArrayList<>();
+    private static final Map<String, DeferredRegister<BlockEntityType<?>>> DRMap = new HashMap<>();
+    private static final Map<String, List<DeferredBlockEntityType<?>>> BLOCK_ENTITY_TYPES_MAP = new HashMap<>();
+    private final String modId;
 
-    public AddonBlockEntities(String modId) {
-        if (INSTANCE != null && FMLEnvironment.dist.isClient()) {
-            throw new IllegalStateException("Tried to initialize AddonBlockEntities on Client Dist.");
+    public BlockEntityRegistry(String modId) {
+        if (DRMap.containsKey(modId) && FMLEnvironment.dist.isClient()) {
+            LOG.error("Tried to initialize AddonBlockEntities on Client Dist with mod id {}", modId);
+            throw new IllegalStateException();
         }
 
-        INSTANCE = this;
-
-        DR = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, modId);
+        this.modId = modId;
+        DRMap.put(modId, DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, modId));
+        BLOCK_ENTITY_TYPES_MAP.put(modId, new ArrayList<>());
     }
 
-    private static AddonBlockEntities getInstance() {
-        if (INSTANCE == null) {
-            throw new IllegalStateException("Block Entities Registration is not initialized.");
+    static DeferredRegister<BlockEntityType<?>> getDR(String modId) {
+        var dr = DRMap.getOrDefault(modId, null);
+        if (dr == null) {
+            LOG.error("Tried to access uninitialized deferred register with mod id {}", modId);
+            throw new IllegalStateException();
         }
-
-        return INSTANCE;
-    }
-
-    static DeferredRegister<?> getDR() {
-        return getInstance().DR;
+        return dr;
     }
 
     /**
      * Get all block entity types whose implementations extends the given base class.
      */
     @SuppressWarnings("unchecked")
-    public static <T extends BlockEntity> List<BlockEntityType<? extends T>> getSubclassesOf(Class<T> baseClass) {
+    public <T extends BlockEntity> List<BlockEntityType<? extends T>> getSubclassesOf(Class<T> baseClass) {
+        return getSubclassesOf(this.modId, baseClass);
+    }
+
+    /**
+     * Get all block entity types whose implementations extends the given base class.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends BlockEntity> List<BlockEntityType<? extends T>> getSubclassesOf(
+            String modId, Class<T> baseClass) {
         var result = new ArrayList<BlockEntityType<? extends T>>();
-        for (var type : BLOCK_ENTITY_TYPES) {
+        for (var type : BLOCK_ENTITY_TYPES_MAP.get(modId)) {
             if (baseClass.isAssignableFrom(type.getBlockEntityClass())) {
                 result.add((BlockEntityType<? extends T>) type.get());
             }
@@ -66,9 +76,16 @@ public class AddonBlockEntities {
     /**
      * Get all block entity types whose implementations implement the given interface.
      */
-    public static List<BlockEntityType<?>> getImplementorsOf(Class<?> iface) {
+    public List<BlockEntityType<?>> getImplementorsOf(Class<?> iface) {
+        return getImplementorsOf(this.modId, iface);
+    }
+
+    /**
+     * Get all block entity types whose implementations implement the given interface.
+     */
+    public static List<BlockEntityType<?>> getImplementorsOf(String modId, Class<?> iface) {
         var result = new ArrayList<BlockEntityType<?>>();
-        for (var type : BLOCK_ENTITY_TYPES) {
+        for (var type : BLOCK_ENTITY_TYPES_MAP.get(modId)) {
             if (iface.isAssignableFrom(type.getBlockEntityClass())) {
                 result.add(type.get());
             }
@@ -79,6 +96,7 @@ public class AddonBlockEntities {
     @SuppressWarnings({"DataFlowIssue", "unchecked"})
     @SafeVarargs
     protected static <T extends AEBaseBlockEntity> Supplier<BlockEntityType<T>> create(
+            String modId,
             String id,
             Class<T> entityClass,
             BlockEntityFactory<T> factory,
@@ -87,7 +105,7 @@ public class AddonBlockEntities {
             throw new IllegalArgumentException();
         }
 
-        var deferred = getInstance().DR.register(id, () -> {
+        var deferred = getDR(modId).register(id, () -> {
             var blocks = Arrays.stream(blockDefs).map(BlockDefinition::block).toArray(AEBaseEntityBlock[]::new);
 
             var typeHolder = new AtomicReference<BlockEntityType<T>>();
@@ -105,7 +123,7 @@ public class AddonBlockEntities {
         });
 
         var result = new DeferredBlockEntityType<>(entityClass, deferred);
-        BLOCK_ENTITY_TYPES.add(result);
+        BLOCK_ENTITY_TYPES_MAP.get(modId).add(result);
         return result;
     }
 
@@ -114,6 +132,6 @@ public class AddonBlockEntities {
     }
 
     public void register(IEventBus eventBus) {
-        getDR().register(eventBus);
+        getDR(this.modId).register(eventBus);
     }
 }

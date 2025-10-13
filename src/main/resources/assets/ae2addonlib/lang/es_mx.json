@@ -1,0 +1,10 @@
+{
+  "gui.tooltips.ae2addonlib.ClearButton": "Limpiar",
+  "gui.tooltips.ae2addonlib.ClearFluidButtonHint": "Limpia el fluido restante de la máquina.",
+  "gui.tooltips.ae2addonlib.ClearSidesButtonHint": "Deshabilita la salida desde todos los lados de la máquina.",
+  "gui.tooltips.ae2addonlib.DirectionalOutputHint": "Configura qué direcciones están permitidas para la exportación automática de salida",
+  "gui.tooltips.ae2addonlib.DirectionalOutput": "Salida direccional",
+  "gui.tooltips.ae2addonlib.InvalidHexInput": "Entrada de código hexadecimal inválida",
+  "gui.tooltips.ae2addonlib.TankAmount": "%s / %s B",
+  "gui.tooltips.ae2addonlib.TankEmpty": "Vacío"
+}

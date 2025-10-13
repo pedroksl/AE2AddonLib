@@ -1,0 +1,10 @@
+{
+  "gui.tooltips.ae2addonlib.ClearButton": "Очистить",
+  "gui.tooltips.ae2addonlib.ClearFluidButtonHint": "Вылейте остатки жидкости из машины.",
+  "gui.tooltips.ae2addonlib.ClearSidesButtonHint": "Отключите выход со всех сторон машины.",
+  "gui.tooltips.ae2addonlib.DirectionalOutputHint": "Настройте, какие направления разрешены для автоэкспорта вывода",
+  "gui.tooltips.ae2addonlib.DirectionalOutput": "Направленный выход",
+  "gui.tooltips.ae2addonlib.InvalidHexInput": "Invalid hex code input",
+  "gui.tooltips.ae2addonlib.TankAmount": "%s / %s B",
+  "gui.tooltips.ae2addonlib.TankEmpty": "Пустой"
+}

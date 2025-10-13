@@ -1,0 +1,10 @@
+{
+  "gui.tooltips.ae2addonlib.ClearButton": "Törlés",
+  "gui.tooltips.ae2addonlib.ClearFluidButtonHint": "A maradék folyadék eltávolítása a gépből.",
+  "gui.tooltips.ae2addonlib.ClearSidesButtonHint": "A gép minden oldalának kimenetének letiltása.",
+  "gui.tooltips.ae2addonlib.DirectionalOutputHint": "Konfigurálja, hogy mely irányok engedélyezettek a kimeneti auto-exporthoz",
+  "gui.tooltips.ae2addonlib.DirectionalOutput": "Irányított kimenet",
+  "gui.tooltips.ae2addonlib.InvalidHexInput": "Érvénytelen hex bemenet",
+  "gui.tooltips.ae2addonlib.TankAmount": "%s / %s B",
+  "gui.tooltips.ae2addonlib.TankEmpty": "Üres"
+}

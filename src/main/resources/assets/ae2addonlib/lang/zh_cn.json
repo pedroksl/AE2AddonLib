@@ -1,0 +1,10 @@
+{
+  "gui.tooltips.ae2addonlib.ClearButton": "清空",
+  "gui.tooltips.ae2addonlib.ClearFluidButtonHint": "清空槽位中剩余的流体。",
+  "gui.tooltips.ae2addonlib.ClearSidesButtonHint": "将所有的面都设置为禁止输出。",
+  "gui.tooltips.ae2addonlib.DirectionalOutputHint": "配置允许自动输出的方向",
+  "gui.tooltips.ae2addonlib.DirectionalOutput": "输出方向",
+  "gui.tooltips.ae2addonlib.InvalidHexInput": "无效十六进制编码输入",
+  "gui.tooltips.ae2addonlib.TankAmount": "%s / %s B",
+  "gui.tooltips.ae2addonlib.TankEmpty": "空"
+}

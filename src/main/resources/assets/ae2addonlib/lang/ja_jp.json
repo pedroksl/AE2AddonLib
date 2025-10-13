@@ -1,0 +1,10 @@
+{
+  "gui.tooltips.ae2addonlib.ClearButton": "消去",
+  "gui.tooltips.ae2addonlib.ClearFluidButtonHint": "残りの液体を機械からきれいさっぱり消去します。",
+  "gui.tooltips.ae2addonlib.ClearSidesButtonHint": "機械のすべての面からの出力を無効にします。",
+  "gui.tooltips.ae2addonlib.DirectionalOutputHint": "自動エクスポートを許可する方向を設定します。",
+  "gui.tooltips.ae2addonlib.DirectionalOutput": "出力方向",
+  "gui.tooltips.ae2addonlib.InvalidHexInput": "Invalid hex code input",
+  "gui.tooltips.ae2addonlib.TankAmount": "%s / %s B",
+  "gui.tooltips.ae2addonlib.TankEmpty": "空"
+}

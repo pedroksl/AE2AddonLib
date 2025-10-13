@@ -1,0 +1,10 @@
+{
+  "gui.tooltips.ae2addonlib.ClearButton": "Temizle",
+  "gui.tooltips.ae2addonlib.ClearFluidButtonHint": "Makineden kalan sıvıyı boşalt.",
+  "gui.tooltips.ae2addonlib.ClearSidesButtonHint": "Makinenin tüm taraflarından çıkışı devre dışı bırak.",
+  "gui.tooltips.ae2addonlib.DirectionalOutputHint": "Otomatik dışa aktarma çıkışı için hangi yönlere izin verildiğini yapılandırın",
+  "gui.tooltips.ae2addonlib.DirectionalOutput": "Yönlü Çıkış",
+  "gui.tooltips.ae2addonlib.InvalidHexInput": "Invalid hex code input",
+  "gui.tooltips.ae2addonlib.TankAmount": "%s / %s B",
+  "gui.tooltips.ae2addonlib.TankEmpty": "Boş"
+}
