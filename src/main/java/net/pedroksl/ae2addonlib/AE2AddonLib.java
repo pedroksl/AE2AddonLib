@@ -9,7 +9,9 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.pedroksl.ae2addonlib.client.screens.OutputDirectionScreen;
-import net.pedroksl.ae2addonlib.registry.helpers.AddonMenus;
+import net.pedroksl.ae2addonlib.client.screens.SetAmountScreen;
+import net.pedroksl.ae2addonlib.registry.helpers.LibComponents;
+import net.pedroksl.ae2addonlib.registry.helpers.LibMenus;
 
 import appeng.init.client.InitScreens;
 
@@ -22,7 +24,8 @@ public class AE2AddonLib {
         assert INSTANCE == null;
         INSTANCE = this;
 
-        AddonMenus.INSTANCE.register(eventBus);
+        LibMenus.INSTANCE.register(eventBus);
+        LibComponents.INSTANCE.register(eventBus);
     }
 
     public static ResourceLocation makeId(String path) {
@@ -36,9 +39,10 @@ public class AE2AddonLib {
         static void onRegisterMenuScreenEvent(RegisterMenuScreensEvent event) {
             InitScreens.register(
                     event,
-                    AddonMenus.OUTPUT_DIRECTION.get(),
+                    LibMenus.OUTPUT_DIRECTION.get(),
                     OutputDirectionScreen::new,
                     "/screens/output_direction.json");
+            InitScreens.register(event, LibMenus.SET_AMOUNT.get(), SetAmountScreen::new, "/screens/set_amount.json");
         }
     }
 }

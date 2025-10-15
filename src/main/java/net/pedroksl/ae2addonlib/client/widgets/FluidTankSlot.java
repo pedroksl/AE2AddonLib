@@ -23,8 +23,8 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.network.PacketDistributor;
+import net.pedroksl.ae2addonlib.datagen.LibText;
 import net.pedroksl.ae2addonlib.network.serverPacket.FluidTankItemUsePacket;
-import net.pedroksl.ae2addonlib.registry.LibText;
 import net.pedroksl.ae2addonlib.util.Colors;
 
 import appeng.api.stacks.AmountFormat;

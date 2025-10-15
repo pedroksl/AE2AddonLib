@@ -13,7 +13,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.pedroksl.ae2addonlib.api.IDirectionalOutputHost;
 import net.pedroksl.ae2addonlib.network.clientPacket.OutputDirectionUpdatePacket;
-import net.pedroksl.ae2addonlib.registry.helpers.AddonMenus;
+import net.pedroksl.ae2addonlib.registry.helpers.LibMenus;
 
 import appeng.api.orientation.RelativeSide;
 import appeng.menu.AEBaseMenu;
@@ -31,7 +31,7 @@ public class OutputDirectionMenu extends AEBaseMenu implements ISubMenu {
     private static final String UPDATE_SIDES = "updateSides";
 
     public OutputDirectionMenu(int id, Inventory ip, IDirectionalOutputHost host) {
-        this(AddonMenus.OUTPUT_DIRECTION.get(), id, ip, host);
+        this(LibMenus.OUTPUT_DIRECTION.get(), id, ip, host);
     }
 
     protected OutputDirectionMenu(
@@ -49,7 +49,7 @@ public class OutputDirectionMenu extends AEBaseMenu implements ISubMenu {
     }
 
     public static void open(ServerPlayer player, MenuHostLocator locator, EnumSet<RelativeSide> allowedOutputs) {
-        MenuOpener.open(AddonMenus.OUTPUT_DIRECTION.get(), player, locator);
+        MenuOpener.open(LibMenus.OUTPUT_DIRECTION.get(), player, locator);
 
         if (player.containerMenu instanceof OutputDirectionMenu cca) {
             cca.setAllowedOutputs(allowedOutputs);

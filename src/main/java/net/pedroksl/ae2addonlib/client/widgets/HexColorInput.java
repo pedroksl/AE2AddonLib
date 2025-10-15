@@ -8,7 +8,7 @@ import java.util.function.Consumer;
 
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
-import net.pedroksl.ae2addonlib.registry.LibText;
+import net.pedroksl.ae2addonlib.datagen.LibText;
 
 import appeng.client.gui.style.ScreenStyle;
 import appeng.client.gui.widgets.ConfirmableTextField;

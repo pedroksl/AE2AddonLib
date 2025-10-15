@@ -1,4 +1,4 @@
-package net.pedroksl.ae2addonlib.registry;
+package net.pedroksl.ae2addonlib.datagen;
 
 import net.pedroksl.ae2addonlib.AE2AddonLib;
 
@@ -10,8 +10,11 @@ public enum LibText implements LocalizationEnum {
     ClearSidesButtonHint("Disable output from all sides of the machine.", Type.TOOLTIP),
     DirectionalOutput("Directional Output", Type.TOOLTIP),
     DirectionalOutputHint("Configure which directions are allowed for output auto-export", Type.TOOLTIP),
+    Enabled("Enabled", Type.TOOLTIP),
+    Disabled("Disabled", Type.TOOLTIP),
     TankEmpty("Empty", Type.TOOLTIP),
     TankAmount("%s / %s B", Type.TOOLTIP),
+    SetAmount("Set Amount", Type.GUI),
     InvalidHexInput("Invalid hex code input", Type.TOOLTIP);
 
     private final String englishText;

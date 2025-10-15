@@ -9,6 +9,7 @@ import net.pedroksl.ae2addonlib.network.clientPacket.FluidTankClientAudioPacket;
 import net.pedroksl.ae2addonlib.network.clientPacket.FluidTankStackUpdatePacket;
 import net.pedroksl.ae2addonlib.network.clientPacket.OutputDirectionUpdatePacket;
 import net.pedroksl.ae2addonlib.network.serverPacket.AddonConfigButtonPacket;
+import net.pedroksl.ae2addonlib.network.serverPacket.AddonHotkeyPacket;
 import net.pedroksl.ae2addonlib.network.serverPacket.FluidTankItemUsePacket;
 
 import appeng.core.network.ClientboundPacket;
@@ -29,8 +30,10 @@ public abstract class AddonNetworkHandler {
             clientbound(registrar, FluidTankClientAudioPacket.TYPE, FluidTankClientAudioPacket.STREAM_CODEC);
             clientbound(registrar, FluidTankStackUpdatePacket.TYPE, FluidTankStackUpdatePacket.STREAM_CODEC);
             clientbound(registrar, OutputDirectionUpdatePacket.TYPE, OutputDirectionUpdatePacket.STREAM_CODEC);
+
             serverbound(registrar, AddonConfigButtonPacket.TYPE, AddonConfigButtonPacket.STREAM_CODEC);
             serverbound(registrar, FluidTankItemUsePacket.TYPE, FluidTankItemUsePacket.STREAM_CODEC);
+            serverbound(registrar, AddonHotkeyPacket.TYPE, AddonHotkeyPacket.STREAM_CODEC);
         } catch (UnsupportedOperationException e) {
             // Lib packets already registered, ignore this step
         }

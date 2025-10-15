@@ -24,7 +24,7 @@ import appeng.client.Point;
 import appeng.client.gui.ICompositeWidget;
 import appeng.core.AppEng;
 
-public class AEStyleSlider implements ICompositeWidget {
+public class AddonSlider implements ICompositeWidget {
     protected static final WidgetSprites SPRITES = new WidgetSprites(
             AppEng.makeId("button"), AppEng.makeId("button_disabled"), AppEng.makeId("button_highlighted"));
 
@@ -50,16 +50,16 @@ public class AEStyleSlider implements ICompositeWidget {
 
     private Consumer<Double> setter;
 
-    public AEStyleSlider() {
+    public AddonSlider() {
         this(value -> {});
     }
 
-    public AEStyleSlider(Consumer<Double> setter) {
+    public AddonSlider(Consumer<Double> setter) {
         this.setter = setter;
         this.format = new DecimalFormat("0");
     }
 
-    public AEStyleSlider(
+    public AddonSlider(
             double minValue, double maxValue, double currentValue, double stepSize, Consumer<Double> setter) {
         this.minValue = minValue;
         this.maxValue = maxValue;

@@ -10,11 +10,13 @@ import org.slf4j.Logger;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
@@ -88,5 +90,12 @@ public class FluidRegistry {
         DR_FLUIDS.get(this.modId).register(eventBus);
         DR_FLUID_BLOCKS.get(this.modId).register(eventBus);
         DR_BUCKET_ITEMS.get(this.modId).register(eventBus);
+    }
+
+    public static int getFluidColor(ItemStack stack, int index) {
+        if (index == 1 && stack.getItem() instanceof BucketItem bucketItem) {
+            return IClientFluidTypeExtensions.of(bucketItem.content).getTintColor();
+        }
+        return 0xFFFFFFFF;
     }
 }

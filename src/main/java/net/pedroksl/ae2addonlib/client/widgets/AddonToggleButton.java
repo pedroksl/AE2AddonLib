@@ -7,7 +7,7 @@ import net.minecraft.network.chat.Component;
 
 import appeng.client.gui.widgets.ITooltip;
 
-public class ToggleButton extends AddonIconButton implements ITooltip {
+public class AddonToggleButton extends AddonIconButton implements ITooltip {
 
     private final Listener listener;
 
@@ -19,14 +19,14 @@ public class ToggleButton extends AddonIconButton implements ITooltip {
 
     private boolean state;
 
-    public ToggleButton(
+    public AddonToggleButton(
             IBlitterIcon on, IBlitterIcon off, Component displayName, Component displayHint, Listener listener) {
         this(on, off, listener);
         setTooltipOn(List.of(displayName, displayHint));
         setTooltipOff(List.of(displayName, displayHint));
     }
 
-    public ToggleButton(IBlitterIcon on, IBlitterIcon off, Listener listener) {
+    public AddonToggleButton(IBlitterIcon on, IBlitterIcon off, Listener listener) {
         super(null);
         this.iconOn = on;
         this.iconOff = off;

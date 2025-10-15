@@ -3,12 +3,11 @@ package net.pedroksl.ae2addonlib.client.widgets;
 import java.util.*;
 import java.util.function.Consumer;
 
-import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
-import net.pedroksl.ae2addonlib.registry.LibText;
+import net.pedroksl.ae2addonlib.datagen.LibText;
 
 import appeng.core.localization.LocalizationEnum;
 
@@ -27,18 +26,17 @@ public class ToolbarActionButton extends AddonIconButton {
         if (appearances == null) {
             appearances = new HashMap<>();
 
+            registerApp(
+                    Icons.DIRECTION_OUTPUT,
+                    AddonActionItems.DIRECTIONAL_OUTPUT,
+                    LibText.DirectionalOutput.text(),
+                    LibText.DirectionalOutputHint.text());
+
             registerAppearances();
         }
     }
 
-    @MustBeInvokedByOverriders
-    protected void registerAppearances() {
-        registerApp(
-                Icons.DIRECTION_OUTPUT,
-                AddonActionItems.DIRECTIONAL_OUTPUT,
-                LibText.DirectionalOutput.text(),
-                LibText.DirectionalOutputHint.text());
-    }
+    protected void registerAppearances() {}
 
     protected static void registerApp(
             IBlitterIcon icon, IActionEnum action, LocalizationEnum title, LocalizationEnum hint) {

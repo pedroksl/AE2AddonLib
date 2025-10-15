@@ -8,7 +8,7 @@ import net.pedroksl.ae2addonlib.util.Colors;
 
 import appeng.client.Point;
 
-public class HueSlider extends AEStyleSlider {
+public class HueSlider extends AddonSlider {
 
     public HueSlider(Consumer<Double> setter) {
         this(0f, setter);
