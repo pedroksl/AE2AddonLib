@@ -1,7 +1,7 @@
 package net.pedroksl.ae2addonlib.client.render;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Collections;
 import java.util.function.Function;
 
 import org.jetbrains.annotations.Nullable;
@@ -11,9 +11,15 @@ import net.minecraft.client.resources.model.*;
 import net.minecraft.resources.ResourceLocation;
 
 public class ConnectedTexturesUnbakedModel implements UnbakedModel {
+    private final ConnectedTexturesBaseBakedModel model;
+
+    public ConnectedTexturesUnbakedModel(ConnectedTexturesBaseBakedModel model) {
+        this.model = model;
+    }
+
     @Override
     public Collection<ResourceLocation> getDependencies() {
-        return List.of();
+        return Collections.emptyList();
     }
 
     @Override
@@ -21,7 +27,7 @@ public class ConnectedTexturesUnbakedModel implements UnbakedModel {
 
     @Override
     public @Nullable BakedModel bake(
-            ModelBaker modelBaker, Function<Material, TextureAtlasSprite> function, ModelState modelState) {
-        return null;
+            ModelBaker loader, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState) {
+        return model;
     }
 }
