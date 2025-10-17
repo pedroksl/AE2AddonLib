@@ -1,4 +1,5 @@
 import com.diffplug.spotless.LineEnding
+import com.hypherionmc.modpublisher.properties.ModLoader
 
 plugins {
     id 'java-library'
@@ -6,6 +7,7 @@ plugins {
     id 'net.neoforged.moddev' version '2.0.113'
     id 'com.diffplug.spotless'
     id 'idea'
+    id "com.hypherionmc.modutils.modpublisher" version '2.1.8'
 }
 
 tasks.named('wrapper', Wrapper).configure {
@@ -156,16 +158,13 @@ tasks.register('apiJar', Jar) {
 publishing {
     publications {
         maven(MavenPublication) {
-            artifactId = "AE2AddonLib"
+            artifactId = "ae2addonlib"
             version = project.mod_version
 
             artifact jar
             artifact sourcesJar
             artifact javadocJar
             artifact apiJar
-        }
-        register('mavenJava', MavenPublication) {
-            from components.java
         }
     }
     repositories {
@@ -184,6 +183,54 @@ idea {
     module {
         downloadSources = true
         downloadJavadoc = true
+    }
+}
+
+publisher {
+    apiKeys {
+        // Modrinth Token
+        modrinth System.getenv("MODRINTH_TOKEN")
+        // Curseforge Token
+        curseforge System.getenv("CURSE_TOKEN")
+        // GitHub Token
+        github System.getenv("GITHUB_TOKEN")
+    }
+
+    setDebug(true)
+
+    setCurseID("1366135")
+    //setModrinthID("rxYaglEe")
+    setVersionType("${project.version_type}")
+    setChangelog("https://raw.githubusercontent.com/pedroksl/AE2AddonLib/refs/heads/master/CHANGELOG.md")
+    setProjectVersion("${project.version}")
+    setDisplayName("AE2AddonLib-${project.version}")
+    setGameVersions("${project.minecraft_version}")
+    setLoaders(ModLoader.NEOFORGE)
+    setCurseEnvironment("both")
+    setArtifact("build/libs/${project.mod_name.replace(" ", "")}-${project.version}.jar")
+    setDisableMalwareScanner(true)
+    setJavaVersions(JavaVersion.VERSION_21, 21)
+    setDisableEmptyJarCheck(true)
+
+    github {
+        repo = "pedroksl/AE2AddonLib"
+
+        tag = "${project.version}-neoforge"
+
+        createTag = true
+        createRelease = true
+        draft = false
+        updateRelease = true
+
+        displayName = "AE2AddonLib-${project.version}"
+    }
+
+    curseDepends {
+        required "applied-energistics-2"
+    }
+
+    modrinthDepends {
+        required "ae2"
     }
 }
 
