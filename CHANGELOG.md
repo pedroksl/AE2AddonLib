@@ -1,1 +1,1 @@
-- Added support for Configs
+- Fixed a crash that happened in dedicated servers
