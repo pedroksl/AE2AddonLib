@@ -55,7 +55,9 @@ public class HotkeyRegistry {
             REGISTRY.get(this.modId).get(id).addFirst(hotkeyAction);
         } else {
             REGISTRY.get(this.modId).put(id, new ArrayList<>(List.of(hotkeyAction)));
-            this.clientRegister.accept(id);
+            if (FMLEnvironment.dist.isClient()) {
+                this.clientRegister.accept(id);
+            }
         }
     }
 
