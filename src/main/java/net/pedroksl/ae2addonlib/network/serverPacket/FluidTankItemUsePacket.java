@@ -10,6 +10,11 @@ import net.pedroksl.ae2addonlib.api.IFluidTankHandler;
 import appeng.core.network.CustomAppEngPayload;
 import appeng.core.network.ServerboundPacket;
 
+/**
+ * Record used to define the packet used to tell the server that the player is interacting with a {@link net.pedroksl.ae2addonlib.client.widgets.FluidTankSlot}.
+ * @param index The slot index
+ * @param button The button used in the interaction.
+ */
 public record FluidTankItemUsePacket(int index, int button) implements ServerboundPacket {
 
     public static final StreamCodec<RegistryFriendlyByteBuf, FluidTankItemUsePacket> STREAM_CODEC =

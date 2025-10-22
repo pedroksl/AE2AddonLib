@@ -8,12 +8,26 @@ import net.pedroksl.ae2addonlib.util.Colors;
 
 import appeng.client.Point;
 
+/**
+ * Widget that creates a slider and lets the user select a hue and, along with {@link SaturationValuePicker}, is used to
+ * compose a color in the HSV color space.
+ * This widget is part of {@link ColorPicker}.
+ */
 public class HueSlider extends AddonSlider {
 
+    /**
+     * Constructs a default hue slider with a consumer function to be called when applying values.
+     * @param setter The setter to be called when applying values.
+     */
     public HueSlider(Consumer<Double> setter) {
         this(0f, setter);
     }
 
+    /**
+     * Constructs a hue slider with a selected initial hue and a consumer function to be called when applying values.
+     * @param hue The initial hue.
+     * @param setter The setter to be called when applying values.
+     */
     public HueSlider(float hue, Consumer<Double> setter) {
         super(0f, 360f, hue * 360f, 1f, setter);
     }

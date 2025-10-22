@@ -1,7 +1,5 @@
 package net.pedroksl.ae2addonlib.registry.helpers;
 
-import java.util.Objects;
-
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.level.block.Block;
@@ -13,82 +11,86 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 
 import appeng.core.definitions.ItemDefinition;
 
-public class FluidDefinition<F extends Fluid, B extends LiquidBlock> {
-    private final String englishName;
-    private final DeferredHolder<FluidType, FluidType> fluidType;
-    private final DeferredHolder<Fluid, F> flowing;
-    private final DeferredHolder<Fluid, F> source;
-    private final DeferredHolder<Block, B> block;
-    private final ItemDefinition<BucketItem> bucketItem;
-
-    public FluidDefinition(
-            String englishName,
-            DeferredHolder<FluidType, FluidType> fluidType,
-            DeferredHolder<Fluid, F> flowing,
-            DeferredHolder<Fluid, F> source,
-            DeferredHolder<Block, B> block,
-            ItemDefinition<BucketItem> bucketItem) {
-        this.englishName = englishName;
-        this.fluidType = Objects.requireNonNull(fluidType);
-        this.flowing = Objects.requireNonNull(flowing);
-        this.source = Objects.requireNonNull(source);
-        this.block = Objects.requireNonNull(block);
-        this.bucketItem = Objects.requireNonNull(bucketItem);
-    }
-
-    public String getEnglishName() {
-        return this.englishName;
-    }
-
+/**
+ * Container record for fluid registration.
+ * @param englishName Human-readable name of the fluid.
+ * @param fluidTypeHolder The holder of the {@link FluidType}.
+ * @param flowingHolder The holder of the flowing fluid.
+ * @param sourceHolder The holder of the source fluid.
+ * @param blockHolder The holder of the fluid block.
+ * @param bucketItemId THe {@link ItemDefinition} of the bucket item.
+ * @param <F> Class that extends a {@link Fluid}.
+ * @param <B> Class that extends a {@link LiquidBlock}
+ */
+public record FluidDefinition<F extends Fluid, B extends LiquidBlock>(
+        String englishName,
+        DeferredHolder<FluidType, FluidType> fluidTypeHolder,
+        DeferredHolder<Fluid, F> flowingHolder,
+        DeferredHolder<Fluid, F> sourceHolder,
+        DeferredHolder<Block, B> blockHolder,
+        ItemDefinition<BucketItem> bucketItemId) {
+    /**
+     * Getter function.
+     * @return The resource location of the source fluid.
+     */
     public ResourceLocation id() {
-        return this.source.getId();
+        return this.sourceHolder.getId();
     }
 
-    public final DeferredHolder<FluidType, FluidType> fluidTypeId() {
-        return this.fluidType;
+    /**
+     * Getter function.
+     * @return The fluid's {@link FluidType}.
+     */
+    public FluidType fluidType() {
+        return this.fluidTypeHolder.get();
     }
 
-    public final FluidType fluidType() {
-        return this.fluidType.get();
+    /**
+     * Getter function.
+     * @return The flowing fluid.
+     */
+    public F flowing() {
+        return this.flowingHolder.get();
     }
 
-    public final DeferredHolder<Fluid, F> flowingId() {
-        return this.flowing;
+    /**
+     * Getter function.
+     * @return The source fluid.
+     */
+    public F source() {
+        return this.sourceHolder.get();
     }
 
-    public final F flowing() {
-        return this.flowing.get();
+    /**
+     * Getter function.
+     * @return The fluid block.
+     */
+    public B block() {
+        return this.blockHolder.get();
     }
 
-    public final DeferredHolder<Fluid, F> sourceId() {
-        return this.source;
+    /**
+     * Getter function.
+     * @return The fluid's bucket item.
+     */
+    public BucketItem bucketItem() {
+        return this.bucketItemId.get();
     }
 
-    public final F source() {
-        return this.source.get();
-    }
-
-    public final DeferredHolder<Block, B> blockId() {
-        return this.block;
-    }
-
-    public final B block() {
-        return this.block.get();
-    }
-
-    public final ItemDefinition<BucketItem> bucketItemId() {
-        return this.bucketItem;
-    }
-
-    public final BucketItem bucketItem() {
-        return this.bucketItem.get();
-    }
-
+    /**
+     * Creates a {@link FluidStack} containing a bucket volume of this fluid.
+     * @return Fluid stack containing 1000mB.
+     */
     public FluidStack stack() {
-        return new FluidStack(this.source.get(), 1000);
+        return new FluidStack(this.sourceHolder.get(), 1000);
     }
 
+    /**
+     * Creates a {@link FluidStack} containing a specified volume of this fluid.
+     * @param amount The desired amount for the fluid stack.
+     * @return The fluid stack.
+     */
     public FluidStack stack(int amount) {
-        return new FluidStack(this.source.get(), amount);
+        return new FluidStack(this.sourceHolder.get(), amount);
     }
 }

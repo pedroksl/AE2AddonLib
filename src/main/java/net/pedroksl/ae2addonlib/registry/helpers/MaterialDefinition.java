@@ -2,36 +2,39 @@ package net.pedroksl.ae2addonlib.registry.helpers;
 
 import java.util.function.Supplier;
 
-import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ArmorMaterial;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
-public class MaterialDefinition<T extends ArmorMaterial> implements Supplier<T> {
-    private final String englishName;
-    private final DeferredHolder<ArmorMaterial, T> material;
+/**
+ * Container record for material registration.
+ * @param englishName Human-readable english name of the material.
+ * @param material The {@link DeferredHolder} of the material.
+ * @param <T> The class that extends {@link ArmorMaterial}.
+ */
+public record MaterialDefinition<T extends ArmorMaterial>(String englishName, DeferredHolder<ArmorMaterial, T> material)
+        implements Supplier<T> {
 
-    public MaterialDefinition(String englishName, DeferredHolder<ArmorMaterial, T> material) {
-        this.englishName = englishName;
-        this.material = material;
-    }
-
-    public String getEnglishName() {
-        return this.englishName;
-    }
-
+    /**
+     * Getter for the resource location of the material definition.
+     * @return The resource location of the material.
+     */
     public ResourceLocation id() {
         return this.material.getId();
     }
 
-    public Holder<ArmorMaterial> holder() {
-        return this.material;
-    }
-
+    /**
+     * Getter for the registered material inside the holder.
+     * @return The registered material.
+     */
     public T get() {
         return this.material.get();
     }
 
+    /**
+     * Getter for the registered material inside the holder.
+     * @return The registered material.
+     */
     public T asItem() {
         return this.material.get();
     }

@@ -3,7 +3,7 @@ package net.pedroksl.ae2addonlib.network.serverPacket;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
-import net.pedroksl.ae2addonlib.api.AddonSettings;
+import net.pedroksl.ae2addonlib.api.SettingsRegistry;
 
 import appeng.api.config.Setting;
 import appeng.api.util.IConfigManager;
@@ -14,7 +14,15 @@ import appeng.core.network.ServerboundPacket;
 import appeng.menu.AEBaseMenu;
 import appeng.util.EnumCycler;
 
-public record AddonConfigButtonPacket(Setting<?> option, boolean rotationDirection) implements ServerboundPacket {
+/**
+ * Record used to define the packet used to toggle/cycle between options in {@link SettingsRegistry}.
+ * It is automatically sent when using an {@link net.pedroksl.ae2addonlib.client.widgets.AddonSettingToggleButton}.
+ * This packet should only be used with settings registered by {@link SettingsRegistry}, otherwise it will throw.
+ * @param modId The MOD_ID of the requesting mod.
+ * @param option The setting to toggle/cycle
+ * @param backwards Determines if the cycling rotation should be forwards or backwards.
+ */
+public record AddonConfigButtonPacket(String modId, Setting<?> option, boolean backwards) implements ServerboundPacket {
 
     public static final StreamCodec<RegistryFriendlyByteBuf, AddonConfigButtonPacket> STREAM_CODEC =
             StreamCodec.ofMember(AddonConfigButtonPacket::write, AddonConfigButtonPacket::decode);
@@ -26,15 +34,17 @@ public record AddonConfigButtonPacket(Setting<?> option, boolean rotationDirecti
         return TYPE;
     }
 
-    public static AddonConfigButtonPacket decode(RegistryFriendlyByteBuf stream) {
-        var option = AddonSettings.getOrThrow(stream.readUtf());
+    private static AddonConfigButtonPacket decode(RegistryFriendlyByteBuf stream) {
+        var modId = stream.readUtf();
+        var option = SettingsRegistry.getOrThrow(modId, stream.readUtf());
         var rotationDirection = stream.readBoolean();
-        return new AddonConfigButtonPacket(option, rotationDirection);
+        return new AddonConfigButtonPacket(modId, option, rotationDirection);
     }
 
-    public void write(RegistryFriendlyByteBuf data) {
+    private void write(RegistryFriendlyByteBuf data) {
+        data.writeUtf(modId);
         data.writeUtf(option.getName());
-        data.writeBoolean(rotationDirection);
+        data.writeBoolean(backwards);
     }
 
     @Override
@@ -53,7 +63,7 @@ public record AddonConfigButtonPacket(Setting<?> option, boolean rotationDirecti
 
     private <T extends Enum<T>> void cycleSetting(IConfigManager cm, Setting<T> setting) {
         var currentValue = cm.getSetting(setting);
-        var nextValue = EnumCycler.rotateEnum(currentValue, rotationDirection, setting.getValues());
+        var nextValue = EnumCycler.rotateEnum(currentValue, backwards, setting.getValues());
         cm.putSetting(setting, nextValue);
     }
 }

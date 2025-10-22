@@ -1,8 +1,6 @@
 package net.pedroksl.ae2addonlib.client.screens;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
@@ -14,10 +12,16 @@ import net.pedroksl.ae2addonlib.client.widgets.OutputDirectionButton;
 import net.pedroksl.ae2addonlib.gui.OutputDirectionMenu;
 
 import appeng.api.orientation.RelativeSide;
+import appeng.client.Point;
 import appeng.client.gui.AEBaseScreen;
 import appeng.client.gui.implementations.AESubScreen;
 import appeng.client.gui.style.ScreenStyle;
 
+/**
+ * Screen used to interact with a {@link OutputDirectionMenu}.
+ * This screen renders buttons for all directions as well as the block entities present in those directions.
+ * It's used to allow the user to enable/disable specific sides for output.
+ */
 public class OutputDirectionScreen extends AEBaseScreen<OutputDirectionMenu> {
 
     private static final int BUTTON_WIDTH = 18;
@@ -28,15 +32,27 @@ public class OutputDirectionScreen extends AEBaseScreen<OutputDirectionMenu> {
     private static final int BUTTON_OFFSET = 2;
 
     private final List<OutputDirectionButton> buttons = new ArrayList<>();
+    private static final Map<RelativeSide, Point> BUTTON_POSITION = makeButtonPositionMap();
 
+    /**
+     * Constructs the screen and adds the button widgets.
+     * @param menu The parent menu
+     * @param playerInventory The player's inventory.
+     * @param title The screen tytle.
+     * @param style The screen style.
+     */
     public OutputDirectionScreen(
             OutputDirectionMenu menu, Inventory playerInventory, Component title, ScreenStyle style) {
         super(menu, playerInventory, title, style);
 
         for (var side : RelativeSide.values()) {
-            var pos = getButtonPosition(side);
+            var pos = BUTTON_POSITION.get(side);
             var button = new OutputDirectionButton(
-                    this.leftPos + pos[0], this.topPos + pos[1], BUTTON_WIDTH, BUTTON_HEIGHT, this::buttonPressed);
+                    this.leftPos + pos.getX(),
+                    this.topPos + pos.getY(),
+                    BUTTON_WIDTH,
+                    BUTTON_HEIGHT,
+                    this::buttonPressed);
             button.setSide(side);
             this.buttons.add(button);
             this.addRenderableWidget(button);
@@ -44,7 +60,7 @@ public class OutputDirectionScreen extends AEBaseScreen<OutputDirectionMenu> {
 
         AESubScreen.addBackButton(menu, "back", widgets);
 
-        AddonActionButton clearBtn = new AddonActionButton(AddonActionItems.CLEAR, btn -> menu.clearSides());
+        AddonActionButton clearBtn = new AddonActionButton(AddonActionItems.CLEAR, menu::clearSides);
         clearBtn.setHalfSize(true);
         clearBtn.setDisableBackground(true);
         widgets.add("clearAll", clearBtn);
@@ -57,12 +73,17 @@ public class OutputDirectionScreen extends AEBaseScreen<OutputDirectionMenu> {
         for (var button : this.buttons) {
             var side = button.getSide();
             if (side != null) {
-                var pos = getButtonPosition(button.getSide());
-                button.setPosition(this.leftPos + pos[0], this.topPos + pos[1]);
+                var pos = BUTTON_POSITION.get(button.getSide());
+                button.setPosition(this.leftPos + pos.getX(), this.topPos + pos.getY());
             }
         }
     }
 
+    /**
+     * Packet handler for the {@link net.pedroksl.ae2addonlib.network.clientPacket.OutputDirectionUpdatePacket}.
+     * Updates all buttons according to server state.
+     * @param sides A set of enabled sides.
+     */
     public void update(Set<RelativeSide> sides) {
         for (var button : this.buttons) {
             var side = button.getSide();
@@ -77,8 +98,8 @@ public class OutputDirectionScreen extends AEBaseScreen<OutputDirectionMenu> {
         for (var button : this.buttons) {
             var side = button.getSide();
             if (side != null) {
-                var pos = getButtonPosition(side);
-                button.setPosition(this.leftPos + pos[0], this.topPos + pos[1]);
+                var pos = BUTTON_POSITION.get(side);
+                button.setPosition(this.leftPos + pos.getX(), this.topPos + pos.getY());
 
                 ItemStack item = this.getMenu().getAdjacentBlock(side);
                 button.setItemStack(item);
@@ -88,26 +109,31 @@ public class OutputDirectionScreen extends AEBaseScreen<OutputDirectionMenu> {
         super.updateBeforeRender();
     }
 
-    private int[] getButtonPosition(RelativeSide side) {
-        return switch (side) {
-            case FRONT -> new int[] {
-                BUTTON_LEFT_OFFSET + BUTTON_WIDTH + BUTTON_OFFSET, BUTTON_TOP_OFFSET + BUTTON_HEIGHT + BUTTON_OFFSET
-            };
-            case BACK -> new int[] {
-                BUTTON_LEFT_OFFSET + 2 * BUTTON_WIDTH + 2 * BUTTON_OFFSET,
-                BUTTON_TOP_OFFSET + 2 * BUTTON_HEIGHT + 2 * BUTTON_OFFSET
-            };
-            case TOP -> new int[] {BUTTON_LEFT_OFFSET + BUTTON_WIDTH + BUTTON_OFFSET, BUTTON_TOP_OFFSET};
-            case RIGHT -> new int[] {BUTTON_LEFT_OFFSET, BUTTON_TOP_OFFSET + BUTTON_HEIGHT + BUTTON_OFFSET};
-            case BOTTOM -> new int[] {
-                BUTTON_LEFT_OFFSET + BUTTON_WIDTH + BUTTON_OFFSET,
-                BUTTON_TOP_OFFSET + 2 * BUTTON_HEIGHT + 2 * BUTTON_OFFSET
-            };
-            case LEFT -> new int[] {
-                BUTTON_LEFT_OFFSET + 2 * BUTTON_WIDTH + 2 * BUTTON_OFFSET,
-                BUTTON_TOP_OFFSET + BUTTON_HEIGHT + BUTTON_OFFSET
-            };
-        };
+    private static Map<RelativeSide, Point> makeButtonPositionMap() {
+        Map<RelativeSide, Point> map = new HashMap<>(6);
+        map.put(
+                RelativeSide.FRONT,
+                new Point(
+                        BUTTON_LEFT_OFFSET + BUTTON_WIDTH + BUTTON_OFFSET,
+                        BUTTON_TOP_OFFSET + BUTTON_HEIGHT + BUTTON_OFFSET));
+        map.put(
+                RelativeSide.BACK,
+                new Point(
+                        BUTTON_LEFT_OFFSET + 2 * BUTTON_WIDTH + 2 * BUTTON_OFFSET,
+                        BUTTON_TOP_OFFSET + 2 * BUTTON_HEIGHT + 2 * BUTTON_OFFSET));
+        map.put(RelativeSide.TOP, new Point(BUTTON_LEFT_OFFSET + BUTTON_WIDTH + BUTTON_OFFSET, BUTTON_TOP_OFFSET));
+        map.put(RelativeSide.RIGHT, new Point(BUTTON_LEFT_OFFSET, BUTTON_TOP_OFFSET + BUTTON_HEIGHT + BUTTON_OFFSET));
+        map.put(
+                RelativeSide.BOTTOM,
+                new Point(
+                        BUTTON_LEFT_OFFSET + BUTTON_WIDTH + BUTTON_OFFSET,
+                        BUTTON_TOP_OFFSET + 2 * BUTTON_HEIGHT + 2 * BUTTON_OFFSET));
+        map.put(
+                RelativeSide.LEFT,
+                new Point(
+                        BUTTON_LEFT_OFFSET + 2 * BUTTON_WIDTH + 2 * BUTTON_OFFSET,
+                        BUTTON_TOP_OFFSET + BUTTON_HEIGHT + BUTTON_OFFSET));
+        return map;
     }
 
     private void buttonPressed(Button b) {

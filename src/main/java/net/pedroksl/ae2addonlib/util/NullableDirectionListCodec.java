@@ -12,9 +12,17 @@ import com.mojang.serialization.*;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * A list codec for {@link NullableDirection}.
+ * Provides a fault-tolerant nullable direction codec.
+ */
 public class NullableDirectionListCodec implements Codec<List<@Nullable NullableDirection>> {
     private final Codec<NullableDirection> innerCodec;
 
+    /**
+     * List Codec constructor.
+     * @param innerCodec The codec of the inner component of this list.
+     */
     public NullableDirectionListCodec(Codec<NullableDirection> innerCodec) {
         this.innerCodec = innerCodec;
     }

@@ -12,6 +12,12 @@ import net.pedroksl.ae2addonlib.api.IFluidTankScreen;
 import appeng.core.network.ClientboundPacket;
 import appeng.core.network.CustomAppEngPayload;
 
+/**
+ * Record used to define a packet used to update the client's {@link net.pedroksl.ae2addonlib.client.widgets.FluidTankSlot} with
+ * the appropriate amount of fluid,
+ * @param index The index of the tank to be updated.
+ * @param stack The {@link FluidStack} to set the slot to.
+ */
 public record FluidTankStackUpdatePacket(int index, FluidStack stack) implements ClientboundPacket {
 
     public static final StreamCodec<RegistryFriendlyByteBuf, FluidTankStackUpdatePacket> STREAM_CODEC =

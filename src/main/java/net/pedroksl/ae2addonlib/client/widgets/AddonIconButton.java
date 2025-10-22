@@ -1,3 +1,21 @@
+/*
+ * This file is part of Applied Energistics 2.
+ * Copyright (c) 2013 - 2014, AlgorithmX2, All rights reserved.
+ *
+ * Applied Energistics 2 is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Applied Energistics 2 is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Applied Energistics 2.  If not, see <http://www.gnu.org/licenses/lgpl>.
+ */
+
 package net.pedroksl.ae2addonlib.client.widgets;
 
 import java.util.Collections;
@@ -17,6 +35,11 @@ import appeng.client.gui.Icon;
 import appeng.client.gui.style.Blitter;
 import appeng.client.gui.widgets.ITooltip;
 
+/**
+ * This button is almost a 1:1 copy of AE2's {@link appeng.client.gui.widgets.IconButton}.
+ * The difference is that this version uses an {@link IBlitterIcon}. This change opens this button implementation
+ * for Addons to create their own Appearances without needing to reuse AE2's {@link Icon} for textures.
+ */
 public abstract class AddonIconButton extends Button implements ITooltip {
 
     private boolean halfSize = false;
@@ -27,15 +50,27 @@ public abstract class AddonIconButton extends Button implements ITooltip {
 
     private boolean enableHoverOffset = true;
 
+    /**
+     * Constructs a button with a callback function.
+     * @param onPress The callback function.
+     */
     public AddonIconButton(OnPress onPress) {
         super(0, 0, 16, 16, Component.empty(), onPress, Button.DEFAULT_NARRATION);
     }
 
+    /**
+     * Changes the button's visibility.
+     * @param vis The desired visibility.
+     */
     public void setVisibility(boolean vis) {
         this.visible = vis;
         this.active = vis;
     }
 
+    /**
+     * Enable or disable the offset when hovering the button.
+     * @param enable Enable/disable the behavior.
+     */
     public void setHoverOffsetChange(boolean enable) {
         this.enableHoverOffset = enable;
     }
@@ -101,10 +136,15 @@ public abstract class AddonIconButton extends Button implements ITooltip {
         }
     }
 
+    /**
+     * Getter for the button's icon.
+     * @return The button's icon.
+     */
     protected abstract IBlitterIcon getIcon();
 
     /**
      * Prioritized over {@link #getIcon()} if not null.
+     * @return The item used as overlay. Null if using an icon instead.
      */
     @Nullable
     protected Item getItemOverlay() {
@@ -126,26 +166,50 @@ public abstract class AddonIconButton extends Button implements ITooltip {
         return this.visible;
     }
 
+    /**
+     * Getter for the button's half size property.
+     * @return If the button is half size.
+     */
     public boolean isHalfSize() {
         return this.halfSize;
     }
 
+    /**
+     * Setter for the button's half size property.
+     * @param halfSize Should the button be half size.
+     */
     public void setHalfSize(boolean halfSize) {
         this.halfSize = halfSize;
     }
 
+    /**
+     * Checks if the button has click sounds enabled.
+     * @return If the button's click sounds are enabled.
+     */
     public boolean isDisableClickSound() {
         return disableClickSound;
     }
 
+    /**
+     * Enables/disables the button's click sound.
+     * @param disableClickSound Should the button be enabled or disabled.
+     */
     public void setDisableClickSound(boolean disableClickSound) {
         this.disableClickSound = disableClickSound;
     }
 
+    /**
+     * Checks if the button's background rendering is enabled/disabled.
+     * @return If the button's background rendering is enabled or disabled.
+     */
     public boolean isDisableBackground() {
         return disableBackground;
     }
 
+    /**
+     * Enables/disables the background rendering.
+     * @param disableBackground Should the background be rendered.
+     */
     public void setDisableBackground(boolean disableBackground) {
         this.disableBackground = disableBackground;
     }

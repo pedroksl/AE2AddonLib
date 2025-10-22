@@ -29,16 +29,23 @@ import net.neoforged.neoforge.client.model.data.ModelProperty;
 import net.neoforged.neoforge.client.model.pipeline.QuadBakingVertexConsumer;
 
 /**
+ * <p>A base baked model for blocks with connected textures.</p>
  * Base Baked Model class heavily inspired by <a href="https://github.com/GlodBlock/ExtendedAE/blob/1.21.1-neoforge/src/main/java/com/glodblock/github/extendedae/client/model/AssemblerGlassBakedModel.java">
- * Extended AE's Assembler Matrix Glass
- * </a>
+ * Extended AE's Assembler Matrix Glass.</a> <br>
+ * The modifications include: <br>
+ * - This model has the option to draw the edges on the inside, useful for translucent blocks. <br>
+ * - All rendered faces/textures can be set to be emissive by themselves <br>
+ * - Made to be extremely generic and customizable, receiving custom connect/light conditions. <br>
+ * The model considers the faces the majority of the block and the sizes are the edges. Rendering is layered to avoid z-fighting,
+ * The face texture should be a full 16x16 texture, while the texture for the sides should follow
+ * <a href="https://github.com/pedroksl/AdvancedAE/blob/master/src/main/resources/assets/advanced_ae/textures/block/crafting/quantum_structure_formed_sides.png?raw=true">this pattern</a>
  */
 public abstract class ConnectedTexturesBaseBakedModel implements IDynamicBakedModel {
     private final ChunkRenderTypeSet RENDER_TYPES;
 
     private static final Object2ReferenceMap<FaceCorner, List<Vector3f>> V_MAP = createVertexMap();
     private static final EnumMap<Direction, List<Vector3f>> F_MAP = createFaceMap();
-    public static final ModelProperty<Connect> CONNECT_STATE = new ModelProperty<>();
+    private static final ModelProperty<Connect> CONNECT_STATE = new ModelProperty<>();
     private static final int LU = 0;
     private static final int RU = 1;
     private static final int LD = 2;
@@ -58,6 +65,13 @@ public abstract class ConnectedTexturesBaseBakedModel implements IDynamicBakedMo
     private boolean isSideEmissive = false;
     private boolean isFaceAnimationEmissive = false;
 
+    /**
+     * Constructs a baked model with a single {@link RenderType} and textures for face, sides and powered textures.
+     * @param renderType The render type use in this model.
+     * @param face The texture atlas of the face.
+     * @param sides The texture atlas of the sides.
+     * @param poweredSides The texture atlas of the sides when powered.
+     */
     protected ConnectedTexturesBaseBakedModel(
             RenderType renderType, TextureAtlasSprite face, TextureAtlasSprite sides, TextureAtlasSprite poweredSides) {
         this(ChunkRenderTypeSet.of(renderType), face, sides, poweredSides);
@@ -65,6 +79,15 @@ public abstract class ConnectedTexturesBaseBakedModel implements IDynamicBakedMo
         this.sideRenderType = renderType;
     }
 
+    /**
+     * overload of {@link #ConnectedTexturesBaseBakedModel(RenderType, RenderType, TextureAtlasSprite, TextureAtlasSprite, TextureAtlasSprite)}
+     * that takes different {@link RenderType}s for the face and sides.
+     * @param faceRenderType The render type used to render the faces in this model.
+     * @param sideRenderType The render type used to render the sides in this model.
+     * @param face The texture atlas of the face.
+     * @param sides The texture atlas of the sides.
+     * @param poweredSides The texture atlas of the sides when powered.
+     */
     protected ConnectedTexturesBaseBakedModel(
             RenderType faceRenderType,
             RenderType sideRenderType,
@@ -76,7 +99,7 @@ public abstract class ConnectedTexturesBaseBakedModel implements IDynamicBakedMo
         this.sideRenderType = sideRenderType;
     }
 
-    protected ConnectedTexturesBaseBakedModel(
+    private ConnectedTexturesBaseBakedModel(
             ChunkRenderTypeSet renderTypes,
             TextureAtlasSprite face,
             TextureAtlasSprite sides,
@@ -87,25 +110,53 @@ public abstract class ConnectedTexturesBaseBakedModel implements IDynamicBakedMo
         this.poweredSides = poweredSides;
     }
 
-    public void setFaceEmissive(boolean faceEmissive) {
+    /**
+     * Sets the face as an emissive texture.
+     * @param faceEmissive Should the face be emissive.
+     */
+    protected void setFaceEmissive(boolean faceEmissive) {
         this.isFaceEmissive = faceEmissive;
     }
 
-    public void setSideEmissive(boolean sideEmissive) {
+    /**
+     * Sets the side as an emissive texture.
+     * @param sideEmissive Should the side be emissive.
+     */
+    protected void setSideEmissive(boolean sideEmissive) {
         this.isSideEmissive = sideEmissive;
     }
 
-    public void setFaceAnimation(HashMap<Direction, TextureAtlasSprite> faceAnimations, boolean emissive) {
+    /**
+     * Sets the face as an animated texture map. <br>
+     * The map should contain a texture for every {@link Direction} or that direction will be ignored during rendering.
+     * @param faceAnimations The texture map for all directions.
+     * @param emissive Should hte animations be emissive.
+     */
+    protected void setFaceAnimation(HashMap<Direction, TextureAtlasSprite> faceAnimations, boolean emissive) {
         this.faceAnimations = faceAnimations;
         this.isFaceAnimationEmissive = emissive;
     }
 
-    public void setRenderOppositeSide(boolean renderOppositeSide) {
+    /**
+     * Sets the model to render the edges in the interior for translucent blocks.
+     * @param renderOppositeSide If the edges should be rendered.
+     */
+    protected void setRenderOppositeSide(boolean renderOppositeSide) {
         this.renderOppositeSide = renderOppositeSide;
     }
 
+    /**
+     * Ask the inheritor class if the connection should happen for the given {@link Block}.
+     * @param block The block trying to connect.
+     * @return If the connection should happen.
+     */
     protected abstract boolean shouldConnect(Block block);
 
+    /**
+     * Ask the inheritor class if the texture should be emissive for the given {@link BlockState}
+     * @param state The blockstate to evaluate.
+     * @return If the texture should be emissive.
+     */
     protected abstract boolean shouldBeEmissive(BlockState state);
 
     @Override
@@ -190,12 +241,11 @@ public abstract class ConnectedTexturesBaseBakedModel implements IDynamicBakedMo
         var cons = F_MAP.get(side);
         var normal = side.getNormal();
         // Render the face a fraction of a pixel inwards to avoid z-fighting
-        var normalF =
-                new Vector3f(getNormalStep(normal.getX()), getNormalStep(normal.getY()), getNormalStep(normal.getZ()));
-        var c1 = new Vector3f(cons.get(0)).sub(normalF);
-        var c2 = new Vector3f(cons.get(1)).sub(normalF);
-        var c3 = new Vector3f(cons.get(2)).sub(normalF);
-        var c4 = new Vector3f(cons.get(3)).sub(normalF);
+        var step = new Vector3f(getNormalStep(normal));
+        var c1 = new Vector3f(cons.get(0)).sub(step);
+        var c2 = new Vector3f(cons.get(1)).sub(step);
+        var c3 = new Vector3f(cons.get(2)).sub(step);
+        var c4 = new Vector3f(cons.get(3)).sub(step);
 
         var builder = new QuadBakingVertexConsumer();
         builder.setSprite(this.face);
@@ -248,12 +298,11 @@ public abstract class ConnectedTexturesBaseBakedModel implements IDynamicBakedMo
         var c4 = renderOpposite ? cons.get(0) : cons.get(3);
         if (renderOpposite) {
             // Render the face a fraction of a pixel inwards to avoid z-fighting
-            var normalF = new Vector3f(
-                    getNormalStep(normal.getX(), 2), getNormalStep(normal.getY(), 2), getNormalStep(normal.getZ(), 2));
-            c1 = new Vector3f(c1).sub(normalF);
-            c2 = new Vector3f(c2).sub(normalF);
-            c3 = new Vector3f(c3).sub(normalF);
-            c4 = new Vector3f(c4).sub(normalF);
+            var step = new Vector3f(getNormalStep(normal, 2));
+            c1 = new Vector3f(c1).sub(step);
+            c2 = new Vector3f(c2).sub(step);
+            c3 = new Vector3f(c3).sub(step);
+            c4 = new Vector3f(c4).sub(step);
         }
         float u0 = renderOpposite ? this.getU1(index) : this.getU0(index);
         float u1 = renderOpposite ? this.getU0(index) : this.getU1(index);
@@ -381,7 +430,7 @@ public abstract class ConnectedTexturesBaseBakedModel implements IDynamicBakedMo
         };
     }
 
-    public static class Connect {
+    private static class Connect {
 
         private final boolean[][][] connects = new boolean[3][3][3];
         private int face;
@@ -515,12 +564,19 @@ public abstract class ConnectedTexturesBaseBakedModel implements IDynamicBakedMo
         return RENDER_TYPES;
     }
 
-    private float getNormalStep(int step) {
-        return getNormalStep(step, 1);
+    private Vector3f getNormalStep(Vec3i normal) {
+        return getNormalStep(normal, 1);
+    }
+
+    private Vector3f getNormalStep(Vec3i normal, float multiplier) {
+        return new Vector3f(
+                getNormalStep(normal.getX(), multiplier),
+                getNormalStep(normal.getY(), multiplier),
+                getNormalStep(normal.getZ(), multiplier));
     }
 
     private float getNormalStep(int step, float multiplier) {
-        return multiplier * (step > 0 ? 0.01f : step < 0 ? -0.01f : 0);
+        return multiplier * (step > 0 ? 0.002f : step < 0 ? -0.002f : 0);
     }
 
     private record FaceCorner(Direction face, int corner) {}

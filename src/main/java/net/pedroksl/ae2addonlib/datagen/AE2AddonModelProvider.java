@@ -24,15 +24,34 @@ import appeng.core.definitions.BlockDefinition;
 import appeng.core.definitions.ItemDefinition;
 import appeng.datagen.providers.models.AE2BlockStateProvider;
 
+/**
+ * Utility class that provides methods to help in generating json models.
+ */
 public abstract class AE2AddonModelProvider extends AE2BlockStateProvider {
+
+    /**
+     * Constructs the provider's instance.
+     * @param packOutput The mod's pack output.
+     * @param modId The MOD_ID of the child mod.
+     * @param exFileHelper The mod's file helper.
+     */
     public AE2AddonModelProvider(PackOutput packOutput, String modId, ExistingFileHelper exFileHelper) {
         super(packOutput, modId, exFileHelper);
     }
 
+    /**
+     * Constructs a model for a simple item from a {@link ItemDefinition}.
+     * @param item The item's definition.
+     */
     protected void basicItem(ItemDefinition<?> item) {
         basicItem(item, null);
     }
 
+    /**
+     * Constructs a model for a simple, optionally referencing a different texture path.
+     * @param item The item's definition.
+     * @param texturePath The path of the textures for the item.
+     */
     protected void basicItem(ItemDefinition<?> item, String texturePath) {
         if (texturePath == null) itemModels().basicItem(item.asItem());
         else {
@@ -44,6 +63,11 @@ public abstract class AE2AddonModelProvider extends AE2BlockStateProvider {
         }
     }
 
+    /**
+     * Constructs a model for a colored item. Generates a model with two layers. The base layer will look for a texture
+     * ending in "_base". The colored layer will look for a texture ending in "_tint".
+     * @param item The item's definition.
+     */
     protected void coloredItem(ItemDefinition<?> item) {
         String namespace = item.id().getNamespace();
         String id = item.id().getPath();
@@ -54,17 +78,30 @@ public abstract class AE2AddonModelProvider extends AE2BlockStateProvider {
                 .texture("layer1", tintTexture);
     }
 
+    /**
+     * Constructs a model for a simple block from a {@link BlockDefinition}.
+     * @param block The block's definition.
+     */
     protected void basicBlock(BlockDefinition<?> block) {
-        var model = cubeAll(block.block());
-        simpleBlock(block.block(), model);
-        simpleBlockItem(block.block(), model);
+        simpleBlockAndItem(block);
     }
 
-    protected void interfaceOrProviderPart(ItemDefinition<?> part) {
-        interfaceOrProviderPart(part, false);
+    /**
+     * Convenience version of {@link #partItem(ItemDefinition, boolean)} that assumes the item isn't an export bus.
+     * @param part The part's definition.
+     */
+    protected void partItem(ItemDefinition<?> part) {
+        partItem(part, false);
     }
 
-    protected void interfaceOrProviderPart(ItemDefinition<?> part, boolean isExport) {
+    /**
+     * <p>Constructs a model for a part item.</p>
+     * Assumes the parts id end in "_part". The resulting block state will use resource locations ending in "_back" and
+     * "_sides" for the back and side textures respectively.
+     * @param part The part's definition.
+     * @param isBus Tells the method if the model is for an export bus.
+     */
+    protected void partItem(ItemDefinition<?> part, boolean isBus) {
         var namespace = part.id().getNamespace();
         var id = part.id().getPath();
         var partName = id.substring(0, id.lastIndexOf('_'));
@@ -72,8 +109,8 @@ public abstract class AE2AddonModelProvider extends AE2BlockStateProvider {
         var back = ResourceLocation.fromNamespaceAndPath(namespace, "part/" + partName + "_back");
         var sides = ResourceLocation.fromNamespaceAndPath(namespace, "part/" + partName + "_sides");
 
-        var base = isExport ? AppEng.makeId("part/export_bus_base") : AppEng.makeId("part/pattern_provider_base");
-        var itemBase = isExport ? AppEng.makeId("item/export_bus") : AppEng.makeId("item/cable_pattern_provider");
+        var base = isBus ? AppEng.makeId("part/export_bus_base") : AppEng.makeId("part/pattern_provider_base");
+        var itemBase = isBus ? AppEng.makeId("item/export_bus") : AppEng.makeId("item/cable_pattern_provider");
 
         models().singleTexture("part/" + id, base, "sidesStatus", AppEng.makeId("part/monitor_sides_status"))
                 .texture("sides", sides)
@@ -86,6 +123,10 @@ public abstract class AE2AddonModelProvider extends AE2BlockStateProvider {
                 .texture("back", back);
     }
 
+    /**
+     * Constructs a pattern provider model from a {@link BlockDefinition}.
+     * @param block The pattern provider's definition.
+     */
     protected void patternProvider(BlockDefinition<?> block) {
         var patternProviderNormal = cubeAll(block.block());
         simpleBlockItem(block.block(), patternProviderNormal);
@@ -161,18 +202,30 @@ public abstract class AE2AddonModelProvider extends AE2BlockStateProvider {
         itemModels().wallInventory(block.id().getPath(), textureRL);
     }
 
-    protected void waterBaseFluid(FluidDefinition<?, ?> fluid) {
+    /**
+     * Constructs a fluid model from a {@link FluidDefinition}.
+     * @param fluid The fluid's definition.
+     */
+    protected void waterBasedFluid(FluidDefinition<?, ?> fluid) {
         waterBasedFluidBlocks(fluid);
         bucket(fluid);
     }
 
+    /**
+     * Constructs a fluid block model from a {@link FluidDefinition}.
+     * @param fluid The fluid's definition.
+     */
     protected void waterBasedFluidBlocks(FluidDefinition<?, ?> fluid) {
         simpleBlock(
                 fluid.block(),
-                models().getBuilder(fluid.blockId().getId().getPath())
+                models().getBuilder(fluid.blockHolder().getId().getPath())
                         .texture("particle", AE2AddonLib.makeId(ModelProvider.BLOCK_FOLDER + "/" + "water_still")));
     }
 
+    /**
+     * Constructs a bucket of fluid from a {@link FluidDefinition}.
+     * @param fluid The fluid's definition.
+     */
     protected void bucket(FluidDefinition<?, ?> fluid) {
         itemModels()
                 .withExistingParent(

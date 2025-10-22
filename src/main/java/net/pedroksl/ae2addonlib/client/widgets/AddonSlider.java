@@ -24,24 +24,61 @@ import appeng.client.Point;
 import appeng.client.gui.ICompositeWidget;
 import appeng.core.AppEng;
 
+/**
+ * A configurable and extendable slider.
+ */
 public class AddonSlider implements ICompositeWidget {
+
+    /**
+     * Resource locations of the slider's textures
+     */
     protected static final WidgetSprites SPRITES = new WidgetSprites(
             AppEng.makeId("button"), AppEng.makeId("button_disabled"), AppEng.makeId("button_highlighted"));
 
     private static final int HANDLE_WIDTH = 8;
     private static final int HANDLE_HALF_WIDTH = 4;
 
+    /**
+     * True if the sliders is currently hovered, false otherwise.
+     */
     protected boolean isHovered;
 
+    /**
+     * The top-left anchor position of the slider.
+     */
     protected Point position = new Point(0, 0);
+    /**
+     * The width of the slider.
+     */
     protected int width = 100;
+    /**
+     * The height of the slider.
+     */
     protected int height = 20;
+    /**
+     * The alpha of the slider.
+     */
     protected float alpha = 1.0F;
 
+    /**
+     * The current value of the slider.
+     */
     protected double value = 0;
+    /**
+     * The minimum value of the slider.
+     */
     protected double minValue = 0;
+    /**
+     * The maximum value of the slider.
+     */
     protected double maxValue = 1;
+    /**
+     * The step size of the slider.
+     */
     protected double stepSize = 1;
+    /**
+     * The display format of the numbers.
+     */
     private final DecimalFormat format;
 
     private boolean isDragging = false;
@@ -50,15 +87,30 @@ public class AddonSlider implements ICompositeWidget {
 
     private Consumer<Double> setter;
 
+    /**
+     * Default constructor. Won't do anything until the consumer is set with {@link #setCallback(Consumer)}.
+     */
     public AddonSlider() {
         this(value -> {});
     }
 
+    /**
+     * Constructs a slider that calls a double consumer whenever the value is applied by the player.
+     * @param setter The double consumer called when applying the value.
+     */
     public AddonSlider(Consumer<Double> setter) {
         this.setter = setter;
         this.format = new DecimalFormat("0");
     }
 
+    /**
+     * Constructs a slider with a range of values and a consumer that is called whenever the player applies the value.
+     * @param minValue The minimum accepted value.
+     * @param maxValue The maximum accepted value.
+     * @param currentValue The current value.
+     * @param stepSize The step size.
+     * @param setter The double consumer called when applying the value.
+     */
     public AddonSlider(
             double minValue, double maxValue, double currentValue, double stepSize, Consumer<Double> setter) {
         this.minValue = minValue;
@@ -69,26 +121,53 @@ public class AddonSlider implements ICompositeWidget {
         this.format = new DecimalFormat("0");
     }
 
+    /**
+     * Getter for the value as a double.
+     * @return The current value as a double.
+     */
     public double getValue() {
         return this.value * (this.maxValue - this.minValue) + this.minValue;
     }
 
+    /**
+     * Getter for the value as a long.
+     * @return The current value as a long.
+     */
     public long getValueLong() {
         return Math.round(this.getValue());
     }
 
+    /**
+     * Getter for the value as an int.
+     * @return The current value as an int.
+     */
     public int getValueInt() {
         return (int) this.getValueLong();
     }
 
+    /**
+     * Sets the current value.
+     * @param value The desired current value.
+     */
     public void setValue(double value) {
         this.setFractionalValue((value - this.minValue) / (this.maxValue - this.minValue));
     }
 
+    /**
+     * Getter for the value as a formatted string.
+     * @return The current value as a formatted string.
+     */
     public String getValueString() {
         return this.format.format(this.getValue());
     }
 
+    /**
+     * Convenience methods that set the current value as well as the limits.
+     * @param minValue The minimum accepted value.
+     * @param maxValue The maximum accepted value.
+     * @param currentValue The current value.
+     * @param stepSize The step size.
+     */
     public void setValues(double minValue, double maxValue, double currentValue, float stepSize) {
         this.minValue = minValue;
         this.maxValue = maxValue;
@@ -96,6 +175,10 @@ public class AddonSlider implements ICompositeWidget {
         setValue(currentValue);
     }
 
+    /**
+     * Sets the callback function, called when applying the value.
+     * @param setter The double consumer to call when applying the value.
+     */
     public void setCallback(Consumer<Double> setter) {
         this.setter = setter;
     }
@@ -117,6 +200,12 @@ public class AddonSlider implements ICompositeWidget {
         renderWidget(guiGraphics, new Point(minX, minY), mouse);
     }
 
+    /**
+     * Renders the slider and its background.
+     * @param guiGraphics The gui graphics
+     * @param topLeft Top-left anchors point.
+     * @param mouse Mouse position.
+     */
     protected void renderWidget(GuiGraphics guiGraphics, Point topLeft, Point mouse) {
         var minX = topLeft.getX();
         var minY = topLeft.getY();
@@ -248,6 +337,9 @@ public class AddonSlider implements ICompositeWidget {
         }
     }
 
+    /**
+     * Applies the value using the member consumer.
+     */
     protected void applyValue() {
         setter.accept(this.getValue());
     }
@@ -268,6 +360,10 @@ public class AddonSlider implements ICompositeWidget {
         return new Rect2i(this.position.getX(), this.position.getY(), this.width, this.height);
     }
 
+    /**
+     * Gets the correct texture based on the current state.
+     * @return The selected texture's {@link ResourceLocation}.
+     */
     protected @NotNull ResourceLocation getHandleSprite() {
         return SPRITES.get(this.isVisible(), this.isHovered);
     }

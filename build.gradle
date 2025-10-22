@@ -8,6 +8,7 @@ plugins {
     id 'com.diffplug.spotless'
     id 'idea'
     id "com.hypherionmc.modutils.modpublisher" version '2.1.8'
+    id("com.vanniktech.maven.publish") version "0.34.0"
 }
 
 tasks.named('wrapper', Wrapper).configure {
@@ -154,22 +155,54 @@ tasks.register('apiJar', Jar) {
     }
 }
 
-// Example configuration to allow publishing using the maven-publish plugin
-publishing {
-    publications {
-        maven(MavenPublication) {
-            artifactId = "ae2addonlib"
-            version = project.mod_version
+tasks.register('publishEverywhere') {
+    dependsOn 'spotlessApply', 'build', 'publishMod', 'publishToMavenCentral'
+}
 
-            artifact jar
-            artifact sourcesJar
-            artifact javadocJar
-            artifact apiJar
-        }
+tasks.javadoc {
+    (options as StandardJavadocDocletOptions).addStringOption("Xdoclint:all,-missing", '-Werror')
+    (options as StandardJavadocDocletOptions).addStringOption("Xmaxwarns", '500')
+}
+afterEvaluate {
+    tasks.javadoc {
+        (options as StandardJavadocDocletOptions).addStringOption("Xdoclint:none")
     }
-    repositories {
-        maven {
-            url "file://${project.projectDir}/repo"
+}
+
+signing {
+    setRequired {
+        gradle.taskGraph.allTasks.any { it instanceof PublishToMavenRepository }
+    }
+}
+
+mavenPublishing  {
+    publishToMavenCentral(true)
+
+    coordinates("io.github.pedroksl", "${project.mod_id}", "${project.mod_version}")
+
+    pom {
+        name = "${project.mod_name}"
+        description = "${project.mod_description}"
+        inceptionYear = "2025"
+        url = "${project.mod_url}"
+        licenses {
+            license {
+                name = "${project.mod_license}"
+                url = "${project.mod_license_url}"
+                distribution = "${project.mod_license_url}"
+            }
+        }
+        developers {
+            developer {
+                id = "Pedro Sathler"
+                name = "${project.mod_authors}"
+                url = "https://github.com/pedroksl"
+            }
+        }
+        scm {
+            url = "${project.mod_url}"
+            connection = "scm:git:git://github.com/pedroksl/AE2AddonLib.git"
+            developerConnection = "scm:git:ssh://git@github.com/pedroksl/AE2AddonLib.git"
         }
     }
 }
@@ -196,13 +229,13 @@ publisher {
         github System.getenv("GITHUB_TOKEN")
     }
 
-    setDebug(true)
+    setDebug(false)
 
     setCurseID("1366135")
     //setModrinthID("rxYaglEe")
     setVersionType("${project.version_type}")
-    setChangelog("https://raw.githubusercontent.com/pedroksl/AE2AddonLib/refs/heads/master/CHANGELOG.md")
-    setProjectVersion("${project.version}")
+    setChangelog("https://raw.githubusercontent.com/pedroksl/AE2AddonLib/refs/heads/main/CHANGELOG.md")
+    setVersion("${project.version}")
     setDisplayName("AE2AddonLib-${project.version}")
     setGameVersions("${project.minecraft_version}")
     setLoaders(ModLoader.NEOFORGE)

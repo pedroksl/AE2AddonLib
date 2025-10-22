@@ -4,7 +4,15 @@ import net.minecraft.data.PackOutput;
 import net.neoforged.neoforge.common.data.LanguageProvider;
 import net.pedroksl.ae2addonlib.AE2AddonLib;
 
+/**
+ * The lib's language provider. Generates translation keys for the lib's text.
+ */
 public class LibLanguageProvider extends LanguageProvider {
+
+    /**
+     * Constructs the language provider.
+     * @param output The pack output.
+     */
     public LibLanguageProvider(PackOutput output) {
         super(output, AE2AddonLib.MOD_ID, "en_us");
     }

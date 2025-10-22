@@ -1,5 +1,7 @@
 package net.pedroksl.ae2addonlib.util;
 
+import org.jetbrains.annotations.NotNull;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -9,6 +11,11 @@ import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtension
 import net.neoforged.neoforge.fluids.FluidType;
 import net.pedroksl.ae2addonlib.AE2AddonLib;
 
+/**
+ * <p>Simple implementation of a water-based fluid.</p>
+ * This class provides the basic components to render a fluid that uses the same textures as water.
+ * The class can be extended to be customized by adding a tint and changing fluid properties.
+ */
 public class WaterBasedFluidType extends FluidType implements IClientFluidTypeExtensions {
 
     private final ResourceLocation UNDERWATER_LOCATION = ResourceLocation.parse("textures/misc/underwater.png");
@@ -16,19 +23,26 @@ public class WaterBasedFluidType extends FluidType implements IClientFluidTypeEx
     private final ResourceLocation WATER_FLOW = AE2AddonLib.makeId("block/water_flowing");
     private final ResourceLocation WATER_OVERLAY = AE2AddonLib.makeId("block/water_overlay");
 
+    /**
+     * The color used to tint the fluid.
+     */
     protected int tintColor = -1;
 
+    /**
+     * Constructs a water-based fluid with given properties.
+     * @param properties The properties to use in fluid construction.
+     */
     public WaterBasedFluidType(Properties properties) {
         super(properties);
     }
 
     @Override
-    public ResourceLocation getStillTexture() {
+    public @NotNull ResourceLocation getStillTexture() {
         return WATER_STILL;
     }
 
     @Override
-    public ResourceLocation getFlowingTexture() {
+    public @NotNull ResourceLocation getFlowingTexture() {
         return WATER_FLOW;
     }
 

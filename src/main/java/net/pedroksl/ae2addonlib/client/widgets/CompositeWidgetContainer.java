@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.renderer.Rect2i;
 
 import appeng.client.Point;
@@ -17,19 +18,46 @@ import appeng.client.gui.style.ScreenStyle;
 import appeng.client.gui.style.WidgetStyle;
 import appeng.client.gui.widgets.IResizableWidget;
 
+/**
+ * A widget container that can hold a list of both {@link ICompositeWidget} and {@link AbstractWidget}.
+ * It works much like a {@link appeng.client.gui.WidgetContainer}, and will take control of its children, making sure they
+ * receive requested event as well as keep them on screen when the screen is repopulated in case of a window resize.
+ */
 public class CompositeWidgetContainer implements ICompositeWidget {
+
+    /**
+     * The screen style, used to find where to position the container anchor.
+     */
     protected final WidgetStyle style;
+
+    /**
+     * The position of the anchor of the container.
+     */
     protected Point position;
+
+    /**
+     * The width of the container.
+     */
     protected int width;
+
+    /**
+     * The height of the container.
+     */
     protected int height;
 
-    protected boolean wantsAllMouseUp = false;
-    protected boolean wantsAllMouseDown = false;
-    protected boolean wantsAllMouseWheel = false;
+    private boolean wantsAllMouseUp = false;
+    private boolean wantsAllMouseDown = false;
+    private boolean wantsAllMouseWheel = false;
 
     private final Map<Point, ICompositeWidget> widgets = new LinkedHashMap<>();
     private final Map<Point, AbstractWidget> abstractWidgets = new LinkedHashMap<>();
 
+    /**
+     * Container constructor
+     * @param addWidget The method to be called when adding the widgets. This will generally be {@link appeng.client.gui.AEBaseScreen#addWidget(GuiEventListener)}.
+     * @param style The screen style.
+     * @param id The id of the widget, as declared in the style sheet.
+     */
     public CompositeWidgetContainer(BiConsumer<String, ICompositeWidget> addWidget, ScreenStyle style, String id) {
         this.style = style.getWidget(id);
         setSize(this.style.getWidth(), this.style.getHeight());
@@ -37,6 +65,11 @@ public class CompositeWidgetContainer implements ICompositeWidget {
         addWidget.accept(id, this);
     }
 
+    /**
+     * Add a {@link ICompositeWidget} to the container.
+     * @param pos The top-left anchor {@link Point}.
+     * @param widget The widget to be added to the container.
+     */
     public void add(Point pos, ICompositeWidget widget) {
         this.widgets.put(pos, widget);
 
@@ -45,6 +78,11 @@ public class CompositeWidgetContainer implements ICompositeWidget {
         wantsAllMouseWheel = wantsAllMouseWheel | widget.wantsAllMouseWheelEvents();
     }
 
+    /**
+     * Add a {@link AbstractWidget} to the container.
+     * @param pos The top-left anchor {@link Point}
+     * @param widget The widget to be added to the container.
+     */
     public void add(Point pos, AbstractWidget widget) {
         this.abstractWidgets.put(pos, widget);
     }

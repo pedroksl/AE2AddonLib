@@ -23,11 +23,15 @@ import appeng.menu.locator.MenuHostLocator;
 import appeng.menu.slot.InaccessibleSlot;
 import appeng.util.inv.AppEngInternalInventory;
 
+/**
+ * The menu for a {@link net.pedroksl.ae2addonlib.client.screens.SetAmountScreen}.
+ * Used as a sub menu for menus that implement the {@link ISetAmountMenuHost}.
+ */
 public class SetAmountMenu extends AEBaseMenu implements ISubMenu {
 
     private final ISubMenuHost host;
 
-    public static final String ACTION_SET_STOCK_AMOUNT = "setStockAmount";
+    private static final String ACTION_SET_STOCK_AMOUNT = "setStockAmount";
     private GenericStack stack;
     private Consumer<GenericStack> consumer;
     private final Slot itemSlot;
@@ -39,10 +43,23 @@ public class SetAmountMenu extends AEBaseMenu implements ISubMenu {
     @GuiSync(2)
     private long maxAmount = -1;
 
+    /**
+     * Default constructor called when AE2 first initializes menus before configuring the instance.
+     * @param id The menu id.
+     * @param playerInventory The player's inventory.
+     * @param host The menu's {@link ISubMenuHost}.
+     */
     public SetAmountMenu(int id, Inventory playerInventory, ISubMenuHost host) {
         this(id, playerInventory, host, null);
     }
 
+    /**
+     * Constructs the class an initializes the slots and client actions.
+     * @param id The menu id.
+     * @param playerInventory The player's inventory.
+     * @param host The menu's {@link ISubMenuHost}.
+     * @param menuToReturnTo The menu to return to, must implement {@link ISetAmountMenuHost}.
+     */
     public SetAmountMenu(
             int id, Inventory playerInventory, ISubMenuHost host, @Nullable ISetAmountMenuHost menuToReturnTo) {
         super(LibMenus.SET_AMOUNT.get(), id, playerInventory, host);
@@ -60,11 +77,29 @@ public class SetAmountMenu extends AEBaseMenu implements ISubMenu {
         return host;
     }
 
+    /**
+     * Open function provided to be called by parent to initialize the menu with some parameters.
+     * Sets the max amount to infinite and returns to the main menu as defined by the host.
+     * @param player The server player.
+     * @param locator The menu host locator.
+     * @param stack The initial stack configuration.
+     * @param consumer A method to be run after the user selects the desired amount.
+     */
     public static void open(
             ServerPlayer player, MenuHostLocator locator, GenericStack stack, Consumer<GenericStack> consumer) {
         open(player, locator, stack, consumer, null, -1);
     }
 
+    /**
+     * Open function provided to be called by parent to initialize the menu with some parameters.
+     * The max amount is configurable, Returns to menuToReturnTo.
+     * @param player The server player.
+     * @param locator The menu host locator.
+     * @param stack The initial stack configuration.
+     * @param consumer A method to be run after the user selects the desired amount.
+     * @param menuToReturnTo The menu to return to. Must implement {@link ISetAmountMenuHost}.
+     * @param maxAmount The max amount allowed for input.
+     */
     public static void open(
             ServerPlayer player,
             MenuHostLocator locator,
@@ -97,6 +132,10 @@ public class SetAmountMenu extends AEBaseMenu implements ISubMenu {
         this.menuToReturnTo = menuToReturnTo;
     }
 
+    /**
+     * Handler for the "confirm" action on the client.
+     * @param amount The amount configured in the screen.
+     */
     public void confirm(long amount) {
         if (isClientSide()) {
             sendClientAction(ACTION_SET_STOCK_AMOUNT, amount);
@@ -116,14 +155,26 @@ public class SetAmountMenu extends AEBaseMenu implements ISubMenu {
         }
     }
 
+    /**
+     * Getter for the initial amount.
+     * @return The initial amount.
+     */
     public long getInitialAmount() {
         return initialAmount;
     }
 
+    /**
+     * Getter for the maximum amount.
+     * @return The max amount.
+     */
     public long getMaxAmount() {
         return maxAmount;
     }
 
+    /**
+     * Getter for the current {@link GenericStack}.
+     * @return The current stack.
+     */
     @Nullable
     public AEKey getWhat() {
         var stack = GenericStack.fromItemStack(itemSlot.getItem());

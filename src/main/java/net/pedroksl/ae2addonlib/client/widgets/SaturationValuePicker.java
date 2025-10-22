@@ -17,6 +17,11 @@ import net.pedroksl.ae2addonlib.util.Colors;
 import appeng.client.Point;
 import appeng.client.gui.ICompositeWidget;
 
+/**
+ * Widget that creates a two axis slider and lets the user select a coordinate. The coordinate is then converted to saturation
+ * and value and, along with {@link HueSlider}, used to compose a color in the HSV color space.
+ * This widget is part of {@link ColorPicker}.
+ */
 public class SaturationValuePicker implements ICompositeWidget {
 
     private Point position;
@@ -31,10 +36,13 @@ public class SaturationValuePicker implements ICompositeWidget {
 
     private boolean isDragging = false;
 
-    public SaturationValuePicker() {
-        this(0f, 0f, 0f, (s, v) -> {});
-    }
-
+    /**
+     * Constructs a saturation value icker with initial values and a {@link BiConsumer} called when applying values.
+     * @param hue The initial hue.
+     * @param saturation The initial saturation.
+     * @param value The initial value.
+     * @param saturationAndValueSetter The function called when applying values.
+     */
     public SaturationValuePicker(
             float hue, float saturation, float value, BiConsumer<Float, Float> saturationAndValueSetter) {
         this.hue = hue;
@@ -141,6 +149,11 @@ public class SaturationValuePicker implements ICompositeWidget {
         this.applyValue((float) newSaturation, (float) newValue);
     }
 
+    /**
+     * Applies the current saturation and value using the store {@link BiConsumer}.
+     * @param newSaturation The new saturation.
+     * @param newValue The new value.
+     */
     protected void applyValue(float newSaturation, float newValue) {
         if (!Mth.equal(this.saturation, newSaturation) || !Mth.equal(this.value, newValue)) {
             this.saturation = newSaturation;
@@ -149,10 +162,19 @@ public class SaturationValuePicker implements ICompositeWidget {
         }
     }
 
+    /**
+     * Setter for the hue. Affects the color space of the widget.
+     * @param hue The new hue.
+     */
     public void setHue(float hue) {
         this.hue = hue;
     }
 
+    /**
+     * Setter for the values.
+     * @param saturation The new saturation.
+     * @param value The new value.
+     */
     public void setValues(float saturation, float value) {
         this.saturation = saturation;
         this.value = value;

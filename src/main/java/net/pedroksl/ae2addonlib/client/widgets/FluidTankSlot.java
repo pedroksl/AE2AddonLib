@@ -32,6 +32,11 @@ import appeng.api.stacks.GenericStack;
 import appeng.client.gui.AEBaseScreen;
 import appeng.core.localization.Tooltips;
 
+/**
+ * A fluid tank slot. This slot must be constructed in the screen class, which must implement the {@link net.pedroksl.ae2addonlib.api.IFluidTankScreen} interface.
+ * That screen needs to be linked to a menu that implements the {@link net.neoforged.neoforge.fluids.capability.IFluidHandler} interface.
+ * The two interfaces provide functionality to handle item use and playing sounds.
+ */
 public class FluidTankSlot extends AbstractWidget {
 
     private final AbstractContainerScreen<?> screen;
@@ -39,18 +44,24 @@ public class FluidTankSlot extends AbstractWidget {
     private FluidStack content = FluidStack.EMPTY;
     private final int maxLevel;
     private boolean disableRender = false;
+    /**
+     * The tank's index.
+     */
     public final int index;
 
+    /**
+     * Constructs a fluid tank slot with initial values.
+     * @param screen The screen the tank is attached to.
+     * @param index The tank's index.
+     * @param x The left-most coordinate of the tank.
+     * @param y The top-most coordinate of the tank.
+     * @param width The width of the tank.
+     * @param height The height of the tank.
+     * @param maxLevel The max level of the tank (in buckets).
+     */
     public FluidTankSlot(
-            AbstractContainerScreen<?> screen,
-            int index,
-            int x,
-            int y,
-            int width,
-            int height,
-            int maxLevel,
-            Component message) {
-        super(x, y, width, height, message);
+            AbstractContainerScreen<?> screen, int index, int x, int y, int width, int height, int maxLevel) {
+        super(x, y, width, height, Component.empty());
         this.maxLevel = maxLevel;
         this.screen = screen;
         this.index = index;
@@ -76,7 +87,12 @@ public class FluidTankSlot extends AbstractWidget {
     @Override
     public void playDownSound(@NotNull SoundManager handler) {}
 
-    public void playDownSound(SoundManager handler, boolean isInsert) {
+    /**
+     * Plays sounds depending on if the fluid was inserted or extracted.
+     * @param isInsert If the fluid was inserted or extracted.
+     */
+    public static void playDownSound(boolean isInsert) {
+        var handler = Minecraft.getInstance().getSoundManager();
         if (isInsert) {
             handler.play(SimpleSoundInstance.forUI(SoundEvents.BUCKET_EMPTY, 1.0F, 1.0F));
         } else {
@@ -119,6 +135,10 @@ public class FluidTankSlot extends AbstractWidget {
     @Override
     protected void updateWidgetNarration(@NotNull NarrationElementOutput narration) {}
 
+    /**
+     * Updates the displayed {@link FluidStack}.
+     * @param fluidStack The new fluid stack.
+     */
     public void setFluidStack(FluidStack fluidStack) {
         if (fluidStack.isEmpty()) {
             this.content = FluidStack.EMPTY;

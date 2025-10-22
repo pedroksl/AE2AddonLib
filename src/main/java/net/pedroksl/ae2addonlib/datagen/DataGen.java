@@ -6,10 +6,17 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.pedroksl.ae2addonlib.AE2AddonLib;
 
+/**
+ * Datagen class used to generate the lib's language files.
+ */
 @SuppressWarnings("unused")
 @EventBusSubscriber(modid = AE2AddonLib.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class DataGen {
 
+    /**
+     * Event handler used to generate language files.
+     * @param event The {@link GatherDataEvent}.
+     */
     @SubscribeEvent
     public static void onGatherData(GatherDataEvent event) {
         var gen = event.getGenerator();

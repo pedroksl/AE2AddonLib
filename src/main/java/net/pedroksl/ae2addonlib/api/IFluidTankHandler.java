@@ -2,12 +2,14 @@ package net.pedroksl.ae2addonlib.api;
 
 import org.lwjgl.glfw.GLFW;
 
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.pedroksl.ae2addonlib.network.clientPacket.FluidTankClientAudioPacket;
 
 import appeng.api.config.Actionable;
@@ -15,20 +17,55 @@ import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.GenericStack;
 import appeng.helpers.externalstorage.GenericStackInv;
 
+/**
+ * Interface used in menus that contain {@link net.pedroksl.ae2addonlib.client.widgets.FluidTankSlot}s.
+ * Attaches the handler directly to the menu.
+ */
 public interface IFluidTankHandler {
 
+    /**
+     * Getter for the server player.
+     * @return The server player.
+     */
+    ServerPlayer getServerPlayer();
+
+    /**
+     * Getter for the carried item.
+     * @return The carried item.
+     */
     ItemStack getCarriedItem();
 
+    /**
+     * Setter for the carried item.
+     * @param stack The carried item.
+     */
     void setCarriedItem(ItemStack stack);
 
+    /**
+     * Getter for the tank.
+     * @return The tank.
+     */
     GenericStackInv getTank();
 
+    /**
+     * Checks if the current tank can be extracted from.
+     * @param index The tank index.
+     * @return If it can be extracted from.
+     */
     boolean canExtractFromTank(int index);
 
+    /**
+     * Checks if the current tank can be inserted into.
+     * @param index The tank index.
+     * @return If it can be inserted into.
+     */
     boolean canInsertInto(int index);
 
-    void playAudioCues(FluidTankClientAudioPacket p);
-
+    /**
+     * Handles item usage relating to the tank. Will try to fill/empty containers, depending on the button used to click.
+     * @param index The tank index.
+     * @param button The button used to interact with the tank.
+     */
     default void onItemUse(int index, int button) {
         var stack = getCarriedItem();
         if (!stack.isEmpty()) {
@@ -60,7 +97,7 @@ public interface IFluidTankHandler {
                         setCarriedItem(cap.getContainer());
 
                         if (inserted > 0) {
-                            playAudioCues(new FluidTankClientAudioPacket(false));
+                            PacketDistributor.sendToPlayer(getServerPlayer(), new FluidTankClientAudioPacket(true));
                         }
                     }
                 } else {
@@ -86,7 +123,7 @@ public interface IFluidTankHandler {
 
                             setCarriedItem(cap.getContainer());
 
-                            playAudioCues(new FluidTankClientAudioPacket(true));
+                            PacketDistributor.sendToPlayer(getServerPlayer(), new FluidTankClientAudioPacket(true));
                         }
                     }
                 }

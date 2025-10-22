@@ -16,6 +16,10 @@ import appeng.api.orientation.RelativeSide;
 import appeng.core.network.ClientboundPacket;
 import appeng.core.network.CustomAppEngPayload;
 
+/**
+ * Record used to define the packet used to update the client on the block entity's enabled/disabled output directions.
+ * @param sides A set containing all enabled {@link RelativeSide}.
+ */
 public record OutputDirectionUpdatePacket(Set<RelativeSide> sides) implements ClientboundPacket {
 
     public static final StreamCodec<RegistryFriendlyByteBuf, OutputDirectionUpdatePacket> STREAM_CODEC =

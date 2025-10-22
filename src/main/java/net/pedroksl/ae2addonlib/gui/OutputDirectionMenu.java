@@ -21,19 +21,36 @@ import appeng.menu.ISubMenu;
 import appeng.menu.MenuOpener;
 import appeng.menu.locator.MenuHostLocator;
 
+/**
+ * The menu for a {@link net.pedroksl.ae2addonlib.client.screens.OutputDirectionScreen}.
+ * Used by block entities that implement the {@link IDirectionalOutputHost} interface.
+ */
 public class OutputDirectionMenu extends AEBaseMenu implements ISubMenu {
 
-    public EnumSet<RelativeSide> allowedOutputs = EnumSet.allOf(RelativeSide.class);
+    private EnumSet<RelativeSide> allowedOutputs = EnumSet.allOf(RelativeSide.class);
 
     private final IDirectionalOutputHost host;
 
     private static final String CLEAR = "clearSides";
     private static final String UPDATE_SIDES = "updateSides";
 
+    /**
+     * Default constructor called when AE2 first initializes menus before configuring the instance.
+     * @param id The menu id.
+     * @param ip The player's inventory.
+     * @param host The menu's {@link IDirectionalOutputHost}.
+     */
     public OutputDirectionMenu(int id, Inventory ip, IDirectionalOutputHost host) {
         this(LibMenus.OUTPUT_DIRECTION.get(), id, ip, host);
     }
 
+    /**
+     * Constructs the class an initializes the client actions.
+     * @param type The menu's {@link MenuType}.
+     * @param id The menu id.
+     * @param ip The player's inventory.
+     * @param host The menu's {@link IDirectionalOutputHost}.
+     */
     protected OutputDirectionMenu(
             MenuType<? extends OutputDirectionMenu> type, int id, Inventory ip, IDirectionalOutputHost host) {
         super(type, id, ip, host);
@@ -48,6 +65,12 @@ public class OutputDirectionMenu extends AEBaseMenu implements ISubMenu {
         return this.host;
     }
 
+    /**
+     * Open function provided to be called by parent to initialize the menu with some parameters.
+     * @param player The server player.
+     * @param locator The menu host locator.
+     * @param allowedOutputs The initial value of the enabled/disabled outputs.
+     */
     public static void open(ServerPlayer player, MenuHostLocator locator, EnumSet<RelativeSide> allowedOutputs) {
         MenuOpener.open(LibMenus.OUTPUT_DIRECTION.get(), player, locator);
 
@@ -57,6 +80,11 @@ public class OutputDirectionMenu extends AEBaseMenu implements ISubMenu {
         }
     }
 
+    /**
+     * Reads the neighbor block entities and creates a matching {@link ItemStack} for the screen to render over the buttons.
+     * @param side The relative side.
+     * @return An item stack representing the neighbor block entity.
+     */
     public ItemStack getAdjacentBlock(RelativeSide side) {
         var dir = host.getOrientation().getSide(side);
         BlockPos blockPos = host.getBlockPos().relative(dir);
@@ -89,6 +117,10 @@ public class OutputDirectionMenu extends AEBaseMenu implements ISubMenu {
         }
     }
 
+    /**
+     * Gets the {@link Level} from the player inventory.
+     * @return The level.
+     */
     public Level getLevel() {
         return this.getPlayerInventory().player.level();
     }
@@ -97,6 +129,9 @@ public class OutputDirectionMenu extends AEBaseMenu implements ISubMenu {
         this.allowedOutputs = allowedOutputs.clone();
     }
 
+    /**
+     * Clears all enabled outputs. Called from the client's screen.
+     */
     public void clearSides() {
         if (isClientSide()) {
             sendClientAction(CLEAR);
@@ -107,6 +142,10 @@ public class OutputDirectionMenu extends AEBaseMenu implements ISubMenu {
         this.getHost().updateOutputSides(this.allowedOutputs);
     }
 
+    /**
+     * Changes the state of one {@link RelativeSide}.
+     * @param side The side to toggle.
+     */
     public void updateSideStatus(RelativeSide side) {
         if (isClientSide()) {
             sendClientAction(UPDATE_SIDES, side);

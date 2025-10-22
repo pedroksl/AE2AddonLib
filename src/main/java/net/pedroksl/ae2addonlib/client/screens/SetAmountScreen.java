@@ -11,12 +11,24 @@ import appeng.client.gui.style.ScreenStyle;
 import appeng.client.gui.widgets.NumberEntryWidget;
 import appeng.core.localization.GuiText;
 
+/**
+ * Screen used to interact with a {@link SetAmountMenu}.
+ * This screen contains a widget to collect user input of a quantity of a stack and send it to the parent menu.
+ */
 public class SetAmountScreen extends AEBaseScreen<SetAmountMenu> {
 
     private final NumberEntryWidget amount;
 
     private boolean amountInitialized;
 
+    /**
+     * Constructs the screen and adds the widgets. The {@link NumberEntryWidget} is initialized with dummy values since
+     * the actual values are not available until later.
+     * @param menu The parent menu.
+     * @param playerInventory The player's inventory.
+     * @param title The screen title.
+     * @param style The screen style.
+     */
     public SetAmountScreen(SetAmountMenu menu, Inventory playerInventory, Component title, ScreenStyle style) {
         super(menu, playerInventory, title, style);
 

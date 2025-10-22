@@ -24,6 +24,9 @@ import appeng.client.gui.style.ScreenStyle;
 import appeng.client.gui.widgets.ConfirmableTextField;
 import appeng.core.localization.GuiText;
 
+/**
+ * Widget used for number input. Similar to {@link appeng.client.gui.widgets.NumberEntryWidget} but without the extra buttons.
+ */
 public class NumberTextField extends ConfirmableTextField {
 
     private static final int PADDING = 10;
@@ -40,6 +43,16 @@ public class NumberTextField extends ConfirmableTextField {
     private long lastLongValue = 0;
     private final Component tooltip;
 
+    /**
+     * Constructs the number text field with initial values.
+     * @param style The screen style.
+     * @param x The left-most coordinate of the widget.
+     * @param y The top-mst coordinate of the widget.
+     * @param width The width of the widget.
+     * @param height The height of the widget.
+     * @param onConfirm The method to be executed when applying new values.
+     * @param tooltip The tooltip text.
+     */
     public NumberTextField(
             ScreenStyle style, int x, int y, int width, int height, Consumer<Long> onConfirm, Component tooltip) {
         super(style, Minecraft.getInstance().font, x, y, width, height);
@@ -64,6 +77,10 @@ public class NumberTextField extends ConfirmableTextField {
         this.validate();
     }
 
+    /**
+     * Checks if the value is different from the last applied value.
+     * @return True if the value was changed.
+     */
     public boolean isChanged() {
         if (getLongValue().isPresent()) {
             return this.lastLongValue != getLongValue().getAsLong();
@@ -71,6 +88,11 @@ public class NumberTextField extends ConfirmableTextField {
         return true;
     }
 
+    /**
+     * Getter for the current value as an {@link OptionalInt}.
+     * Optional was used here because the input might not be valid at all times.
+     * @return The int value wrapped in an optional.
+     */
     public OptionalInt getIntValue() {
         var value = getLongValue();
         if (value.isPresent()) {
@@ -83,6 +105,11 @@ public class NumberTextField extends ConfirmableTextField {
         return OptionalInt.empty();
     }
 
+    /**
+     * Getter for the current value as an {@link OptionalLong}.
+     * Optional was used here because the input might not be valid at all times.
+     * @return The long value wrapped in an optional.
+     */
     public OptionalLong getLongValue() {
         var internalValue = getValueInternal();
         if (internalValue.isEmpty()) {
@@ -103,6 +130,10 @@ public class NumberTextField extends ConfirmableTextField {
         return OptionalLong.of(externalValue);
     }
 
+    /**
+     * Setter for the current value from a long value.
+     * @param value The new long value.
+     */
     public void setLongValue(long value) {
         this.lastLongValue = value;
         var internalValue = convertToInternalValue(Longs.constrainToRange(value, minValue, maxValue));

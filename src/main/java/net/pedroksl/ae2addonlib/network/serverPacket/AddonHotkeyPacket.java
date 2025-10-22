@@ -13,6 +13,12 @@ import appeng.core.localization.PlayerMessages;
 import appeng.core.network.CustomAppEngPayload;
 import appeng.core.network.ServerboundPacket;
 
+/**
+ * Record used to define the packet used to handle hotkeys pressed on the server. It is sent automatically whenever
+ * a registered key is pressed.
+ * @param modId The MOD_ID of the mod related to the pressed hotkey.
+ * @param hotkey The registered id of the hotkey.
+ */
 public record AddonHotkeyPacket(String modId, String hotkey) implements ServerboundPacket {
     public static final StreamCodec<RegistryFriendlyByteBuf, AddonHotkeyPacket> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.STRING_UTF8,
@@ -28,6 +34,10 @@ public record AddonHotkeyPacket(String modId, String hotkey) implements Serverbo
         return TYPE;
     }
 
+    /**
+     * Convenience constructor that extracts the needed information from an {@link net.pedroksl.ae2addonlib.client.Hotkeys.AddonHotkey}.
+     * @param hotkey The hotkey that was pressed and need to be handled by the server.
+     */
     public AddonHotkeyPacket(Hotkeys.AddonHotkey hotkey) {
         this(hotkey.modId(), hotkey.name());
     }
