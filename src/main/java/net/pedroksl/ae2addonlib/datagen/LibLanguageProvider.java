@@ -1,7 +1,7 @@
 package net.pedroksl.ae2addonlib.datagen;
 
 import net.minecraft.data.PackOutput;
-import net.neoforged.neoforge.common.data.LanguageProvider;
+import net.minecraftforge.common.data.LanguageProvider;
 import net.pedroksl.ae2addonlib.AE2AddonLib;
 
 /**

@@ -8,20 +8,20 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.WallBlock;
-import net.neoforged.neoforge.client.model.generators.BlockModelBuilder;
-import net.neoforged.neoforge.client.model.generators.ModelFile;
-import net.neoforged.neoforge.client.model.generators.ModelProvider;
-import net.neoforged.neoforge.client.model.generators.loaders.DynamicFluidContainerModelBuilder;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
-import net.neoforged.neoforge.internal.versions.neoforge.NeoForgeVersion;
+import net.minecraftforge.client.model.generators.BlockModelBuilder;
+import net.minecraftforge.client.model.generators.ModelFile;
+import net.minecraftforge.client.model.generators.ModelProvider;
+import net.minecraftforge.client.model.generators.loaders.DynamicFluidContainerModelBuilder;
+import net.minecraftforge.common.data.ExistingFileHelper;
+import net.minecraftforge.versions.forge.ForgeVersion;
 import net.pedroksl.ae2addonlib.AE2AddonLib;
 import net.pedroksl.ae2addonlib.registry.helpers.FluidDefinition;
+import net.pedroksl.ae2addonlib.registry.helpers.LibItemDefinition;
 
 import appeng.api.orientation.BlockOrientation;
 import appeng.block.crafting.PatternProviderBlock;
 import appeng.core.AppEng;
 import appeng.core.definitions.BlockDefinition;
-import appeng.core.definitions.ItemDefinition;
 import appeng.datagen.providers.models.AE2BlockStateProvider;
 
 /**
@@ -40,10 +40,10 @@ public abstract class AE2AddonModelProvider extends AE2BlockStateProvider {
     }
 
     /**
-     * Constructs a model for a simple item from a {@link ItemDefinition}.
+     * Constructs a model for a simple item from a {@link LibItemDefinition}.
      * @param item The item's definition.
      */
-    protected void basicItem(ItemDefinition<?> item) {
+    protected void basicItem(LibItemDefinition<?> item) {
         basicItem(item, null);
     }
 
@@ -52,13 +52,12 @@ public abstract class AE2AddonModelProvider extends AE2BlockStateProvider {
      * @param item The item's definition.
      * @param texturePath The path of the textures for the item.
      */
-    protected void basicItem(ItemDefinition<?> item, String texturePath) {
+    protected void basicItem(LibItemDefinition<?> item, String texturePath) {
         if (texturePath == null) itemModels().basicItem(item.asItem());
         else {
             String namespace = item.id().getNamespace();
             String id = item.id().getPath();
-            ResourceLocation texture =
-                    ResourceLocation.fromNamespaceAndPath(namespace, "item/" + texturePath + "/" + id);
+            ResourceLocation texture = new ResourceLocation(namespace, "item/" + texturePath + "/" + id);
             itemModels().singleTexture(id, mcLoc("item/generated"), "layer0", texture);
         }
     }
@@ -68,11 +67,11 @@ public abstract class AE2AddonModelProvider extends AE2BlockStateProvider {
      * ending in "_base". The colored layer will look for a texture ending in "_tint".
      * @param item The item's definition.
      */
-    protected void coloredItem(ItemDefinition<?> item) {
+    protected void coloredItem(LibItemDefinition<?> item) {
         String namespace = item.id().getNamespace();
         String id = item.id().getPath();
-        ResourceLocation baseTexture = ResourceLocation.fromNamespaceAndPath(namespace, "item/" + id + "_base");
-        ResourceLocation tintTexture = ResourceLocation.fromNamespaceAndPath(namespace, "item/" + id + "_tint");
+        ResourceLocation baseTexture = new ResourceLocation(namespace, "item/" + id + "_base");
+        ResourceLocation tintTexture = new ResourceLocation(namespace, "item/" + id + "_tint");
         itemModels()
                 .singleTexture(id, mcLoc("item/generated"), "layer0", baseTexture)
                 .texture("layer1", tintTexture);
@@ -87,10 +86,10 @@ public abstract class AE2AddonModelProvider extends AE2BlockStateProvider {
     }
 
     /**
-     * Convenience version of {@link #partItem(ItemDefinition, boolean)} that assumes the item isn't an export bus.
+     * Convenience version of {@link #partItem(LibItemDefinition, boolean)} that assumes the item isn't an export bus.
      * @param part The part's definition.
      */
-    protected void partItem(ItemDefinition<?> part) {
+    protected void partItem(LibItemDefinition<?> part) {
         partItem(part, false);
     }
 
@@ -101,13 +100,13 @@ public abstract class AE2AddonModelProvider extends AE2BlockStateProvider {
      * @param part The part's definition.
      * @param isBus Tells the method if the model is for an export bus.
      */
-    protected void partItem(ItemDefinition<?> part, boolean isBus) {
+    protected void partItem(LibItemDefinition<?> part, boolean isBus) {
         var namespace = part.id().getNamespace();
         var id = part.id().getPath();
         var partName = id.substring(0, id.lastIndexOf('_'));
-        var front = ResourceLocation.fromNamespaceAndPath(namespace, "part/" + partName);
-        var back = ResourceLocation.fromNamespaceAndPath(namespace, "part/" + partName + "_back");
-        var sides = ResourceLocation.fromNamespaceAndPath(namespace, "part/" + partName + "_sides");
+        var front = new ResourceLocation(namespace, "part/" + partName);
+        var back = new ResourceLocation(namespace, "part/" + partName + "_back");
+        var sides = new ResourceLocation(namespace, "part/" + partName + "_sides");
 
         var base = isBus ? AppEng.makeId("part/export_bus_base") : AppEng.makeId("part/pattern_provider_base");
         var itemBase = isBus ? AppEng.makeId("item/export_bus") : AppEng.makeId("item/cable_pattern_provider");
@@ -135,9 +134,9 @@ public abstract class AE2AddonModelProvider extends AE2BlockStateProvider {
         var blockName = block.id().getPath();
         var patternProviderOriented = models().cubeBottomTop(
                         "block/" + blockName + "_oriented",
-                        ResourceLocation.fromNamespaceAndPath(namespace, "block/" + blockName + "_alt"),
-                        ResourceLocation.fromNamespaceAndPath(namespace, "block/" + blockName + "_back"),
-                        ResourceLocation.fromNamespaceAndPath(namespace, "block/" + blockName + "_front"));
+                        new ResourceLocation(namespace, "block/" + blockName + "_alt"),
+                        new ResourceLocation(namespace, "block/" + blockName + "_back"),
+                        new ResourceLocation(namespace, "block/" + blockName + "_front"));
         multiVariantGenerator(block, Variant.variant())
                 .with(PropertyDispatch.property(PatternProviderBlock.PUSH_DIRECTION)
                         .generate((dir) -> {
@@ -164,9 +163,9 @@ public abstract class AE2AddonModelProvider extends AE2BlockStateProvider {
             BlockDefinition<StairBlock> stairs, String bottomTexture, String sideTexture, String topTexture) {
         String namespace = stairs.id().getNamespace();
         String baseName = stairs.id().getPath();
-        ResourceLocation side = ResourceLocation.fromNamespaceAndPath(namespace, sideTexture);
-        ResourceLocation bottom = ResourceLocation.fromNamespaceAndPath(namespace, bottomTexture);
-        ResourceLocation top = ResourceLocation.fromNamespaceAndPath(namespace, topTexture);
+        ResourceLocation side = new ResourceLocation(namespace, sideTexture);
+        ResourceLocation bottom = new ResourceLocation(namespace, bottomTexture);
+        ResourceLocation top = new ResourceLocation(namespace, topTexture);
         ModelFile stairsModel = this.models().stairs(baseName, side, bottom, top);
         ModelFile stairsInner = this.models().stairsInner(baseName + "_inner", side, bottom, top);
         ModelFile stairsOuter = this.models().stairsOuter(baseName + "_outer", side, bottom, top);
@@ -182,9 +181,9 @@ public abstract class AE2AddonModelProvider extends AE2BlockStateProvider {
             String sideTexture,
             String topTexture) {
         String namespace = slab.id().getNamespace();
-        ResourceLocation side = ResourceLocation.fromNamespaceAndPath(namespace, sideTexture);
-        ResourceLocation bottom = ResourceLocation.fromNamespaceAndPath(namespace, bottomTexture);
-        ResourceLocation top = ResourceLocation.fromNamespaceAndPath(namespace, topTexture);
+        ResourceLocation side = new ResourceLocation(namespace, sideTexture);
+        ResourceLocation bottom = new ResourceLocation(namespace, bottomTexture);
+        ResourceLocation top = new ResourceLocation(namespace, topTexture);
         BlockModelBuilder bottomModel = this.models().slab(slab.id().getPath(), side, bottom, top);
         this.simpleBlockItem(slab.block(), bottomModel);
         this.slabBlock(
@@ -197,13 +196,14 @@ public abstract class AE2AddonModelProvider extends AE2BlockStateProvider {
     @Override
     protected void wall(BlockDefinition<WallBlock> block, String texture) {
         String namespace = block.id().getNamespace();
-        ResourceLocation textureRL = ResourceLocation.fromNamespaceAndPath(namespace, texture);
+        ResourceLocation textureRL = new ResourceLocation(namespace, texture);
         wallBlock(block.block(), textureRL);
         itemModels().wallInventory(block.id().getPath(), textureRL);
     }
 
     /**
      * Constructs a fluid model from a {@link FluidDefinition}.
+     * Also constructs the bucket model.
      * @param fluid The fluid's definition.
      */
     protected void waterBasedFluid(FluidDefinition<?, ?> fluid) {
@@ -218,7 +218,7 @@ public abstract class AE2AddonModelProvider extends AE2BlockStateProvider {
     protected void waterBasedFluidBlocks(FluidDefinition<?, ?> fluid) {
         simpleBlock(
                 fluid.block(),
-                models().getBuilder(fluid.blockHolder().getId().getPath())
+                models().getBuilder(fluid.blockRegistry().getId().getPath())
                         .texture("particle", AE2AddonLib.makeId(ModelProvider.BLOCK_FOLDER + "/" + "water_still")));
     }
 
@@ -230,9 +230,9 @@ public abstract class AE2AddonModelProvider extends AE2BlockStateProvider {
         itemModels()
                 .withExistingParent(
                         fluid.bucketItemId().id().getPath(),
-                        ResourceLocation.fromNamespaceAndPath(NeoForgeVersion.MOD_ID, "item/bucket"))
+                        ResourceLocation.tryBuild(ForgeVersion.MOD_ID, "item/bucket"))
                 .customLoader(DynamicFluidContainerModelBuilder::begin)
-                .fluid(fluid.bucketItem().content);
+                .fluid(fluid.bucketItem().getFluid());
     }
 
     @Override

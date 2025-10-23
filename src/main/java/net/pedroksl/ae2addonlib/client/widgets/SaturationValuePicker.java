@@ -96,10 +96,10 @@ public class SaturationValuePicker implements ICompositeWidget {
         var buffer = guiGraphics.bufferSource().getBuffer(type);
         var matrix = guiGraphics.pose().last().pose();
 
-        buffer.addVertex(matrix, x + width, y, 0).setColor(trColor);
-        buffer.addVertex(matrix, x, y, 0).setColor(tlColor);
-        buffer.addVertex(matrix, x, y + height, 0).setColor(blColor);
-        buffer.addVertex(matrix, x + width, y + height, 0).setColor(brColor);
+        buffer.vertex(matrix, x + width, y, 0).color(trColor);
+        buffer.vertex(matrix, x, y, 0).color(tlColor);
+        buffer.vertex(matrix, x, y + height, 0).color(blColor);
+        buffer.vertex(matrix, x + width, y + height, 0).color(brColor);
     }
 
     @Override
@@ -143,8 +143,8 @@ public class SaturationValuePicker implements ICompositeWidget {
         double x = ((mouseX - (double) (this.position.getX())) / (double) (this.width));
         double y = ((mouseY - (double) (this.position.getY())) / (double) (this.height));
 
-        double newSaturation = Math.clamp(x, 0f, 1f);
-        double newValue = Math.clamp((1f - y), 0f, 1f);
+        double newSaturation = Mth.clamp(x, 0f, 1f);
+        double newValue = Mth.clamp((1f - y), 0f, 1f);
 
         this.applyValue((float) newSaturation, (float) newValue);
     }

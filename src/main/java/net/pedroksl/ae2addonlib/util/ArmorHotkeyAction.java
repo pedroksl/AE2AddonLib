@@ -8,8 +8,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 
 import appeng.api.features.HotkeyAction;
-import appeng.menu.locator.ItemMenuHostLocator;
-import appeng.menu.locator.MenuLocators;
 
 /**
  * A hotkey action that will try to match an {@link ItemStack} with the equipped armor pieces  of the target player.
@@ -33,7 +31,7 @@ public record ArmorHotkeyAction(Predicate<ItemStack> locatable, Opener opener) i
         int i = 0;
         for (var item : items) {
             if (this.locatable.test(item)) {
-                if (opener.open(player, MenuLocators.forInventorySlot(Inventory.INVENTORY_SIZE + i))) {
+                if (opener.open(player, Inventory.INVENTORY_SIZE + i, item)) {
                     return true;
                 }
             }
@@ -50,10 +48,11 @@ public record ArmorHotkeyAction(Predicate<ItemStack> locatable, Opener opener) i
     public interface Opener {
         /**
          * The opener's method.
-         * @param olayer The player that triggered the hotkey.
-         * @param menuHostLocator The menu locator.
+         * @param player The player that triggered the hotkey.
+         * @param inventorySlot The inventory slot index.
+         * @param stack The item stack.
          * @return Returns if the actions was successful.
          */
-        boolean open(Player olayer, ItemMenuHostLocator menuHostLocator);
+        boolean open(Player player, int inventorySlot, ItemStack stack);
     }
 }

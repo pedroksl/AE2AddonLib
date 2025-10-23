@@ -12,17 +12,17 @@ import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.material.Fluid;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.loading.FMLEnvironment;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.neoforged.neoforge.fluids.FluidType;
-import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fluids.FluidType;
+import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.pedroksl.ae2addonlib.registry.helpers.FluidDefinition;
-
-import appeng.core.definitions.ItemDefinition;
+import net.pedroksl.ae2addonlib.registry.helpers.LibItemDefinition;
 
 /**
  * <p>Class responsible for the registering of fluids.</p>
@@ -35,8 +35,8 @@ public class FluidRegistry {
 
     private static final Map<String, DeferredRegister<FluidType>> DR_FLUID_TYPES = new HashMap<>();
     private static final Map<String, DeferredRegister<Fluid>> DR_FLUIDS = new HashMap<>();
-    private static final Map<String, DeferredRegister.Blocks> DR_FLUID_BLOCKS = new HashMap<>();
-    private static final Map<String, DeferredRegister.Items> DR_BUCKET_ITEMS = new HashMap<>();
+    private static final Map<String, DeferredRegister<Block>> DR_FLUID_BLOCKS = new HashMap<>();
+    private static final Map<String, DeferredRegister<Item>> DR_BUCKET_ITEMS = new HashMap<>();
     private static final Map<String, List<FluidDefinition<?, ?>>> FLUIDS = new HashMap<>();
     private final String modId;
 
@@ -52,10 +52,10 @@ public class FluidRegistry {
         }
 
         this.modId = modId;
-        DR_FLUID_TYPES.put(modId, DeferredRegister.create(NeoForgeRegistries.Keys.FLUID_TYPES, modId));
+        DR_FLUID_TYPES.put(modId, DeferredRegister.create(ForgeRegistries.Keys.FLUID_TYPES, modId));
         DR_FLUIDS.put(modId, DeferredRegister.create(Registries.FLUID, modId));
-        DR_FLUID_BLOCKS.put(modId, DeferredRegister.createBlocks(modId));
-        DR_BUCKET_ITEMS.put(modId, DeferredRegister.createItems(modId));
+        DR_FLUID_BLOCKS.put(modId, DeferredRegister.create(Registries.BLOCK, modId));
+        DR_BUCKET_ITEMS.put(modId, DeferredRegister.create(Registries.ITEM, modId));
         FLUIDS.put(modId, new ArrayList<>());
     }
 
@@ -80,7 +80,7 @@ public class FluidRegistry {
      * <p>Registration method for fluids.</p>
      * This method needs definitions of the fluid in various different states.
      * For the {@link FluidType}, water-based fluids (that use the same base textures) can extend {@link net.pedroksl.ae2addonlib.util.WaterBasedFluidType}.
-     * For the flowing and source suppliers, one option is to extend {@link net.neoforged.neoforge.fluids.BaseFlowingFluid}
+     * For the flowing and source suppliers, one option is to extend {@link net.minecraftforge.fluids.ForgeFlowingFluid}
      * and choose properties accordingly. The Liquid block supplier accepts an extension of {@link LiquidBlock}.
      * @param modId The MOD_ID of the requesting mod.
      * @param englishName Human-readable string to name the block.
@@ -116,7 +116,7 @@ public class FluidRegistry {
                                         .craftRemainder(Items.BUCKET)
                                         .stacksTo(1)));
 
-        var bucketDefinition = new ItemDefinition<>(englishName + " Bucket", bucketItem);
+        var bucketDefinition = new LibItemDefinition<>(englishName + " Bucket", bucketItem);
         var definition = new FluidDefinition<>(englishName, type, flowing, source, block, bucketDefinition);
 
         FLUIDS.get(modId).add(definition);
@@ -143,7 +143,7 @@ public class FluidRegistry {
      */
     public static int getFluidColor(ItemStack stack, int index) {
         if (index == 1 && stack.getItem() instanceof BucketItem bucketItem) {
-            return IClientFluidTypeExtensions.of(bucketItem.content).getTintColor();
+            return IClientFluidTypeExtensions.of(bucketItem.getFluid()).getTintColor();
         }
         return 0xFFFFFFFF;
     }

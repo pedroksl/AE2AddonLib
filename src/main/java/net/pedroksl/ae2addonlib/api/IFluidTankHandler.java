@@ -6,11 +6,10 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluids;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.network.PacketDistributor;
-import net.pedroksl.ae2addonlib.network.clientPacket.FluidTankClientAudioPacket;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.pedroksl.ae2addonlib.client.widgets.FluidTankSlot;
 
 import appeng.api.config.Actionable;
 import appeng.api.stacks.AEFluidKey;
@@ -69,15 +68,14 @@ public interface IFluidTankHandler {
     default void onItemUse(int index, int button) {
         var stack = getCarriedItem();
         if (!stack.isEmpty()) {
-            var cap = stack.getCapability(Capabilities.FluidHandler.ITEM);
-            if (cap != null) {
-
+            var forgeCap = stack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM);
+            forgeCap.ifPresent(cap -> {
                 var tank = getTank();
                 if (tank == null) return;
 
                 boolean isBucket = stack.getItem() instanceof BucketItem;
                 if ((!isBucket && button == GLFW.GLFW_MOUSE_BUTTON_LEFT)
-                        || (isBucket && ((BucketItem) stack.getItem()).content == Fluids.EMPTY)) {
+                        || (isBucket && ((BucketItem) stack.getItem()).getFluid() == Fluids.EMPTY)) {
                     if (!canExtractFromTank(index)) return;
 
                     var genStack = tank.getStack(index);
@@ -97,7 +95,7 @@ public interface IFluidTankHandler {
                         setCarriedItem(cap.getContainer());
 
                         if (inserted > 0) {
-                            PacketDistributor.sendToPlayer(getServerPlayer(), new FluidTankClientAudioPacket(true));
+                            FluidTankSlot.playDownSound(true);
                         }
                     }
                 } else {
@@ -123,11 +121,11 @@ public interface IFluidTankHandler {
 
                             setCarriedItem(cap.getContainer());
 
-                            PacketDistributor.sendToPlayer(getServerPlayer(), new FluidTankClientAudioPacket(true));
+                            FluidTankSlot.playDownSound(false);
                         }
                     }
                 }
-            }
+            });
         }
     }
 }

@@ -12,20 +12,20 @@ license="${mod_license}"
     description='''${mod_description}'''
 
 [[dependencies.${mod_id}]] #optional
-    modId="neoforge" #mandatory
-    type="required" #mandatory
-    versionRange="[${neo_version},)" #mandatory
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version}"
     ordering="NONE"
     side="BOTH"
 [[dependencies.${mod_id}]]
     modId="minecraft"
-    type="required"
+    mandatory=true
     versionRange="${minecraft_version_range}"
     ordering="NONE"
     side="BOTH"
 [[dependencies.${mod_id}]]
     modId="ae2"
-    type="required"
-    versionRange="[19.2.16,)"
+    mandatory=true
+    versionRange="[${ae2_version},)"
     ordering="AFTER"
     side="BOTH"

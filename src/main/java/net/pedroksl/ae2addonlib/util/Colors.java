@@ -143,6 +143,7 @@ public final class Colors {
 
     /**
      * Creates a new color using values from the HSV color space.
+     * All values are expected to be in the 0 - 1f range.
      * Assumes maximum alpha.
      * @param hue The color hue.
      * @param saturation The color saturation.
@@ -150,11 +151,12 @@ public final class Colors {
      * @return The constructed Colors instance.
      */
     public static Colors ofHsv(float hue, float saturation, float value) {
-        return ofArgb(Mth.hsvToArgb(hue - 0.5e-7f, saturation, value, 255));
+        return ofRgb(Mth.hsvToRgb(hue - 0.5e-7f, saturation, value));
     }
 
     /**
      * Creates a new color using values from the HSV color space.
+     * All values are expected to be in the 0 - 1f range.
      * @param hue The color hue.
      * @param saturation The color saturation.
      * @param value The color value.
@@ -162,7 +164,8 @@ public final class Colors {
      * @return The constructed Colors instance.
      */
     public static @NotNull Colors ofHsv(float hue, float saturation, float value, float alpha) {
-        return ofArgb(Mth.hsvToArgb(hue - 0.5e-7f, saturation, value, (int) alpha * 255));
+        int color = Mth.hsvToRgb(hue - 0.5e-7f, saturation, value);
+        return ofArgb(color | (int) (alpha * 255) << 24);
     }
 
     /**
@@ -219,7 +222,7 @@ public final class Colors {
      * @return The color in RGB color space.
      */
     public int rgb() {
-        return FastColor.ARGB32.color(this.red, this.green, this.blue);
+        return this.red << 16 | this.green << 8 | this.blue;
     }
 
     /**

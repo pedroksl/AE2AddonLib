@@ -1,45 +1,54 @@
 package net.pedroksl.ae2addonlib.network.clientPacket;
 
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 import net.pedroksl.ae2addonlib.client.screens.OutputDirectionScreen;
+import net.pedroksl.ae2addonlib.network.AddonPacket;
 
 import appeng.api.orientation.RelativeSide;
-import appeng.core.network.ClientboundPacket;
-import appeng.core.network.CustomAppEngPayload;
 
 /**
- * Record used to define the packet used to update the client on the block entity's enabled/disabled output directions.
- * @param sides A set containing all enabled {@link RelativeSide}.
+ * Class used to define the packet used to update the client on the block entity's enabled/disabled output directions.
  */
-public record OutputDirectionUpdatePacket(Set<RelativeSide> sides) implements ClientboundPacket {
+public class OutputDirectionUpdatePacket extends AddonPacket {
 
-    public static final StreamCodec<RegistryFriendlyByteBuf, OutputDirectionUpdatePacket> STREAM_CODEC =
-            StreamCodec.composite(
-                    NeoForgeStreamCodecs.enumCodec(RelativeSide.class)
-                            .apply(ByteBufCodecs.list())
-                            .map(Set::copyOf, List::copyOf),
-                    OutputDirectionUpdatePacket::sides,
-                    OutputDirectionUpdatePacket::new);
+    private final Set<RelativeSide> sides;
 
-    public static final Type<OutputDirectionUpdatePacket> TYPE =
-            CustomAppEngPayload.createType("output_direction_update_client");
+    /**
+     * Constructs the packet from data in the stream.
+     * @param stream The data stream.
+     */
+    public OutputDirectionUpdatePacket(FriendlyByteBuf stream) {
+        var size = stream.readInt();
+        this.sides = new HashSet<>(size);
+        for (var i = 0; i < size; i++) {
+            sides.add(stream.readEnum(RelativeSide.class));
+        }
+    }
 
-    @Override
-    public Type<? extends CustomPacketPayload> type() {
-        return TYPE;
+    /**
+     * Constructs the packet to send to the stream.
+     * @param sides A set containing all enabled {@link RelativeSide}s.
+     */
+    public OutputDirectionUpdatePacket(Set<RelativeSide> sides) {
+        this.sides = new HashSet<>(sides.size());
+        this.sides.addAll(sides);
     }
 
     @Override
-    public void handleOnClient(Player player) {
+    protected void write(FriendlyByteBuf stream) {
+        stream.writeInt(sides.size());
+        for (var side : sides) {
+            stream.writeEnum(side);
+        }
+    }
+
+    @Override
+    public void clientPacketData(Player player) {
         if (Minecraft.getInstance().screen instanceof OutputDirectionScreen screen) {
             screen.update(this.sides);
         }

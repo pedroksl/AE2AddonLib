@@ -13,14 +13,13 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.loading.FMLEnvironment;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.minecraftforge.registries.DeferredRegister;
+import net.pedroksl.ae2addonlib.registry.helpers.LibBlockDefinition;
 
 import appeng.block.AEBaseEntityBlock;
 import appeng.blockentity.AEBaseBlockEntity;
-import appeng.core.definitions.BlockDefinition;
-import appeng.core.definitions.DeferredBlockEntityType;
 
 /**
  * <p>Class responsible for the registering of block entities.</p>
@@ -32,7 +31,7 @@ public class BlockEntityRegistry {
     private static final Logger LOG = LogUtils.getLogger();
 
     private static final Map<String, DeferredRegister<BlockEntityType<?>>> DRMap = new HashMap<>();
-    private static final Map<String, List<DeferredBlockEntityType<?>>> BLOCK_ENTITY_TYPES_MAP = new HashMap<>();
+    private static final Map<String, List<BlockEntityType<?>>> BLOCK_ENTITY_TYPES_MAP = new HashMap<>();
     private final String modId;
 
     /**
@@ -83,8 +82,8 @@ public class BlockEntityRegistry {
             String modId, Class<T> baseClass) {
         var result = new ArrayList<BlockEntityType<? extends T>>();
         for (var type : BLOCK_ENTITY_TYPES_MAP.getOrDefault(modId, new ArrayList<>())) {
-            if (baseClass.isAssignableFrom(type.getBlockEntityClass())) {
-                result.add((BlockEntityType<? extends T>) type.get());
+            if (baseClass.isAssignableFrom(type.getClass())) {
+                result.add((BlockEntityType<? extends T>) type);
             }
         }
         return result;
@@ -108,8 +107,8 @@ public class BlockEntityRegistry {
     public static List<BlockEntityType<?>> getImplementorsOf(String modId, Class<?> iface) {
         var result = new ArrayList<BlockEntityType<?>>();
         for (var type : BLOCK_ENTITY_TYPES_MAP.getOrDefault(modId, new ArrayList<>())) {
-            if (iface.isAssignableFrom(type.getBlockEntityClass())) {
-                result.add(type.get());
+            if (iface.isAssignableFrom(type.getClass())) {
+                result.add(type);
             }
         }
         return result;
@@ -122,7 +121,7 @@ public class BlockEntityRegistry {
      * @param id The id string of the block entity.
      * @param entityClass The class of the block entity.
      * @param factory Factory method capable of creating a new instance of the block entity.
-     * @param blockDefs A list of {@link BlockDefinition} containing the blocks that share this block entity.
+     * @param blockDefs A list of {@link LibBlockDefinition} containing the blocks that share this block entity.
      * @param <T> The class of the block entity.
      * @return A supplier of this {@link BlockEntityType}.
      */
@@ -133,18 +132,19 @@ public class BlockEntityRegistry {
             String id,
             Class<T> entityClass,
             BlockEntityFactory<T> factory,
-            BlockDefinition<? extends AEBaseEntityBlock<?>>... blockDefs) {
+            LibBlockDefinition<? extends AEBaseEntityBlock<?>>... blockDefs) {
         if (blockDefs.length == 0) {
             throw new IllegalArgumentException();
         }
 
-        var deferred = getDR(modId).register(id, () -> {
-            var blocks = Arrays.stream(blockDefs).map(BlockDefinition::block).toArray(AEBaseEntityBlock[]::new);
+        return getDR(modId).register(id, () -> {
+            var blocks = Arrays.stream(blockDefs).map(LibBlockDefinition::block).toArray(AEBaseEntityBlock[]::new);
 
             var typeHolder = new AtomicReference<BlockEntityType<T>>();
             var type = BlockEntityType.Builder.of((pos, state) -> factory.create(typeHolder.get(), pos, state), blocks)
                     .build(null);
             typeHolder.setPlain(type);
+            BLOCK_ENTITY_TYPES_MAP.get(modId).add(type);
 
             AEBaseBlockEntity.registerBlockEntityItem(type, blockDefs[0].asItem());
 
@@ -154,10 +154,6 @@ public class BlockEntityRegistry {
 
             return type;
         });
-
-        var result = new DeferredBlockEntityType<>(entityClass, deferred);
-        BLOCK_ENTITY_TYPES_MAP.get(modId).add(result);
-        return result;
     }
 
     /**

@@ -3,16 +3,15 @@ package net.pedroksl.ae2addonlib.client;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
-
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nullable;
 
 import net.minecraft.client.KeyMapping;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.pedroksl.ae2addonlib.network.AddonPacket;
+import net.pedroksl.ae2addonlib.network.LibNetworkHandler;
 import net.pedroksl.ae2addonlib.network.serverPacket.AddonHotkeyPacket;
 import net.pedroksl.ae2addonlib.registry.HotkeyRegistry;
 
 import appeng.api.features.HotkeyAction;
-import appeng.core.network.ServerboundPacket;
 
 /**
  * <p>Client registry and holder class.</p>
@@ -50,7 +49,7 @@ public class Hotkeys {
     /**
      * <p>Finalizes the hotkey registration on the client instance.</p>
      * This method adds all pre-registered hotkeys to the actual hotkey pool.
-     * @param register The consumer of key mapping present in {@link net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent#register(KeyMapping)}.
+     * @param register The consumer of key mapping present in {@link net.minecraftforge.client.event.RegisterKeyMappingsEvent#register(KeyMapping)}.
      */
     public void finalizeRegistration(Consumer<KeyMapping> register) {
         for (var value : HOTKEYS.values()) {
@@ -70,7 +69,7 @@ public class Hotkeys {
 
     /**
      * Checks all registered hotkeys to see if they should be activated. This method should be called in the
-     * {@link net.neoforged.neoforge.client.event.ClientTickEvent.Post} event.
+     * {@link net.minecraftforge.event.TickEvent.ClientTickEvent} event.
      */
     public void checkHotkeys() {
         HOTKEYS.forEach((name, hotkey) -> hotkey.check());
@@ -98,8 +97,8 @@ public class Hotkeys {
          */
         public void check() {
             while (this.mapping().consumeClick()) {
-                ServerboundPacket message = new AddonHotkeyPacket(this);
-                PacketDistributor.sendToServer(message);
+                AddonPacket message = new AddonHotkeyPacket(this);
+                LibNetworkHandler.INSTANCE.sendToServer(message);
             }
         }
     }

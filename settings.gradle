@@ -4,14 +4,23 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
         maven {
+            name = 'NeoForged'
+            url = 'https://maven.neoforged.net/releases'
+        }
+        maven {
+            name = "Sponge"
+            url = 'https://repo.spongepowered.org/maven'
+        }
+        maven {
             url "https://maven.firstdark.dev/releases"
         }
     }
     plugins {
-        id("com.diffplug.spotless") version "6.25.0"
+        id 'net.neoforged.moddev.legacyforge' version '2.0.86'
+        id 'com.diffplug.spotless' version '6.25.0'
     }
 }
 
 plugins {
-    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.9.0'
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.5.0'
 }

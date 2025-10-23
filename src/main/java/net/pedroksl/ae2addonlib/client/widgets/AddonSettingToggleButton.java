@@ -14,14 +14,14 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ItemLike;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.pedroksl.ae2addonlib.network.AddonPacket;
+import net.pedroksl.ae2addonlib.network.LibNetworkHandler;
 import net.pedroksl.ae2addonlib.network.serverPacket.AddonConfigButtonPacket;
 
 import appeng.api.config.Setting;
 import appeng.client.gui.AEBaseScreen;
 import appeng.core.localization.ButtonToolTips;
 import appeng.core.localization.LocalizationEnum;
-import appeng.core.network.ServerboundPacket;
 import appeng.util.EnumCycler;
 
 /**
@@ -305,8 +305,8 @@ public class AddonSettingToggleButton<T extends Enum<T>> extends AddonIconButton
 
     private static <T extends Enum<T>> void sendToServer(
             AddonSettingToggleButton<T> button, boolean backwards, String modId) {
-        ServerboundPacket message = new AddonConfigButtonPacket(modId, button.getSetting(), backwards);
-        PacketDistributor.sendToServer(message);
+        AddonPacket message = new AddonConfigButtonPacket(modId, button.getSetting(), backwards);
+        LibNetworkHandler.INSTANCE.sendToServer(message);
     }
 
     /**

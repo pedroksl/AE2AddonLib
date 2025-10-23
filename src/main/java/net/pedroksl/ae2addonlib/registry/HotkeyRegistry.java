@@ -13,11 +13,10 @@ import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 
 import net.minecraft.world.level.ItemLike;
-import net.neoforged.fml.loading.FMLEnvironment;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.pedroksl.ae2addonlib.util.ArmorHotkeyAction;
 
 import appeng.api.features.HotkeyAction;
-import appeng.hotkeys.CuriosHotkeyAction;
 import appeng.hotkeys.InventoryHotkeyAction;
 
 /**
@@ -69,8 +68,8 @@ public class HotkeyRegistry {
      * @param id An identifier string for the registered action.
      */
     protected void register(ItemLike item, InventoryHotkeyAction.Opener opener, String id) {
-        register(new InventoryHotkeyAction(item, opener), id);
-        register(new CuriosHotkeyAction(item, opener), id);
+        register(new InventoryHotkeyAction(stack -> stack.is(item.asItem()), opener), id);
+        // register(new CuriosHotkeyAction(item, opener), id);
     }
 
     /**
@@ -92,7 +91,7 @@ public class HotkeyRegistry {
      */
     protected synchronized void register(HotkeyAction hotkeyAction, String id) {
         if (REGISTRY.get(this.modId).containsKey(id)) {
-            REGISTRY.get(this.modId).get(id).addFirst(hotkeyAction);
+            REGISTRY.get(this.modId).get(id).add(0, hotkeyAction);
         } else {
             REGISTRY.get(this.modId).put(id, new ArrayList<>(List.of(hotkeyAction)));
             if (FMLEnvironment.dist.isClient()) {

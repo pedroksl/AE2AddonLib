@@ -18,12 +18,12 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.inventory.InventoryMenu;
-import net.neoforged.fml.ModList;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fml.ModList;
 import net.pedroksl.ae2addonlib.datagen.LibText;
+import net.pedroksl.ae2addonlib.network.LibNetworkHandler;
 import net.pedroksl.ae2addonlib.network.serverPacket.FluidTankItemUsePacket;
 import net.pedroksl.ae2addonlib.util.Colors;
 
@@ -34,7 +34,7 @@ import appeng.core.localization.Tooltips;
 
 /**
  * A fluid tank slot. This slot must be constructed in the screen class, which must implement the {@link net.pedroksl.ae2addonlib.api.IFluidTankScreen} interface.
- * That screen needs to be linked to a menu that implements the {@link net.neoforged.neoforge.fluids.capability.IFluidHandler} interface.
+ * That screen needs to be linked to a menu that implements the {@link net.pedroksl.ae2addonlib.api.IFluidTankHandler} interface.
  * The two interfaces provide functionality to handle item use and playing sounds.
  */
 public class FluidTankSlot extends AbstractWidget {
@@ -68,19 +68,38 @@ public class FluidTankSlot extends AbstractWidget {
     }
 
     @Override
-    public void onClick(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (this.active && this.visible) {
+            if (this.isValidClickButton(button)) {
+                boolean flag = this.clicked(mouseX, mouseY);
+                if (flag) {
+                    this.playDownSound(Minecraft.getInstance().getSoundManager());
+                    handleClick(mouseX, mouseY, button);
+                    return true;
+                }
+            }
+
+            return false;
+        } else {
+            return false;
+        }
+    }
+
+    private void handleClick(double mouseX, double mouseY, int button) {
         var stack = screen.getMenu().getCarried();
         if (!stack.isEmpty()) {
-            var cap = stack.getCapability(Capabilities.FluidHandler.ITEM);
-            if (cap != null) {
+            var forgeCap = stack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM);
+            forgeCap.ifPresent(cap -> {
                 FluidStack fluidStack = cap.getFluidInTank(0);
-                if (fluidStack.is(this.content.getFluid()) || fluidStack.isEmpty() || this.content.isEmpty()) {
+                if (fluidStack.getFluid() == this.content.getFluid()
+                        || fluidStack.isEmpty()
+                        || this.content.isEmpty()) {
                     var actualButton = screen instanceof AEBaseScreen<?> baseScreen
                             ? (baseScreen.isHandlingRightClick() ? 1 : 0)
                             : button;
-                    PacketDistributor.sendToServer(new FluidTankItemUsePacket(this.index, actualButton));
+                    LibNetworkHandler.INSTANCE.sendToServer(new FluidTankItemUsePacket(this.index, actualButton));
                 }
-            }
+            });
         }
     }
 
@@ -174,7 +193,7 @@ public class FluidTankSlot extends AbstractWidget {
         var genericStack = GenericStack.fromFluidStack(content);
         if (genericStack != null) {
             setTooltip(Tooltip.create(Tooltips.of(
-                    stack.getHoverName(),
+                    stack.getDisplayName(),
                     Component.literal("\n"),
                     LibText.TankAmount.text(
                                     genericStack.what().formatAmount(genericStack.amount(), AmountFormat.SLOT),

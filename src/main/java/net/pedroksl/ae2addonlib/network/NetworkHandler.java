@@ -1,94 +1,183 @@
 package net.pedroksl.ae2addonlib.network;
 
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
-import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
-import appeng.core.network.ClientboundPacket;
-import appeng.core.network.CustomAppEngPayload;
-import appeng.core.network.ServerboundPacket;
+import com.mojang.logging.LogUtils;
+
+import org.slf4j.Logger;
+
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.RunningOnDifferentThreadException;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.network.NetworkRegistry;
+import net.minecraftforge.network.event.EventNetworkChannel;
+
+import appeng.core.AppEng;
+import appeng.core.sync.network.TargetPoint;
 
 /**
  * Handles the registration of network packets. Provides helper functions to make the registration process easier.
- * The recommended way to use this class is to extend it with a static class and override {@link #onRegister(PayloadRegistrar)}
+ * The recommended way to use this class is to extend it with a static class and implement {@link #init()}
  * to add calls to register the mod's packets.
  */
 public abstract class NetworkHandler {
+    private static final Logger LOG = LogUtils.getLogger();
 
-    private final String modId;
+    private final ResourceLocation channel;
+    private final Consumer<AddonPacket> clientHandler;
+
+    private int id = 0;
+    private final Object2IntMap<Class<? extends AddonPacket>> idMap = new Object2IntOpenHashMap<>();
+    private final Int2ObjectMap<Function<FriendlyByteBuf, AddonPacket>> factoryMap = new Int2ObjectOpenHashMap<>();
 
     /**
      * Constructs the handler saving the modId for future use.
      * @param modId The MOD_ID of the extender mod.
      */
     public NetworkHandler(String modId) {
-        this.modId = modId;
+        this.channel = new ResourceLocation(modId, "channel");
+        EventNetworkChannel ec = NetworkRegistry.ChannelBuilder.named(channel)
+                .networkProtocolVersion(() -> "1")
+                .clientAcceptedVersions(s -> true)
+                .serverAcceptedVersions(s -> true)
+                .eventNetworkChannel();
+        ec.registerObject(this);
+
+        this.clientHandler =
+                DistExecutor.unsafeRunForDist(() -> () -> NetworkHandler::onPacketData, () -> () -> pkt -> {});
     }
 
-    /**
-     * The {@link RegisterPayloadHandlersEvent} handler. This method should be added as a listener in the main mod class.
-     * @param event The event to be handled.
-     */
-    public final void register(RegisterPayloadHandlersEvent event) {
-        var registrar = event.registrar(this.modId);
-
-        onRegister(registrar);
+    private static void onPacketData(AddonPacket packet) {
+        try {
+            packet.clientPacketData(Minecraft.getInstance().player);
+        } catch (final IllegalArgumentException e) {
+            LOG.error("Failed handling packet", e);
+        }
     }
 
     /**
      * Entry point for addon packet registration. Override this and call the register methods inside.
-     * Usage examle: {@link LibNetworkHandler#onRegister(PayloadRegistrar)}.
-     * @param registrar The mod's registrar. It's needed for the register methods.
+     * Usage example: {@link LibNetworkHandler#init()}.
+     * This method should be called inside the common setup listener for your mod, as seen here: {@link net.pedroksl.ae2addonlib.AE2AddonLib#commonSetup(FMLCommonSetupEvent)}.
      */
-    public abstract void onRegister(PayloadRegistrar registrar);
+    public abstract void init();
 
-    /**
-     * Registers client-bound packets. These packets should be created as records that implement the {@link ClientboundPacket} interface.
-     * @param registrar The registrar, used to register the packet.
-     * @param type The packet's type. Constructed using {@link CustomAppEngPayload#createType(String)}.
-     * @param codec The {@link StreamCodec} that encodes/decodes the packet.
-     * @param <T> The packet's class.
-     */
-    protected static <T extends ClientboundPacket> void clientbound(
-            PayloadRegistrar registrar,
-            CustomPacketPayload.Type<T> type,
-            StreamCodec<RegistryFriendlyByteBuf, T> codec) {
-        registrar.playToClient(type, codec, ClientboundPacket::handleOnClient);
+    protected void registerPacket(Class<? extends AddonPacket> clazz, Function<FriendlyByteBuf, AddonPacket> factory) {
+        factoryMap.put(id, factory);
+        idMap.put(clazz, id);
+        id++;
     }
 
-    /**
-     * Registers server-bound packets. These packets should be created as records that implement the {@link ServerboundPacket} interface.
-     * @param registrar The registrar, used to register the packet.
-     * @param type The packet's type. Constructed using {@link CustomAppEngPayload#createType(String)}.
-     * @param codec The {@link StreamCodec} that encodes/decodes the packet.
-     * @param <T> The packet's class.
-     */
-    protected static <T extends ServerboundPacket> void serverbound(
-            PayloadRegistrar registrar,
-            CustomPacketPayload.Type<T> type,
-            StreamCodec<RegistryFriendlyByteBuf, T> codec) {
-        registrar.playToServer(type, codec, ServerboundPacket::handleOnServer);
+    @SubscribeEvent
+    public void serverPacket(final NetworkEvent.ClientCustomPayloadEvent ev) {
+        try {
+            NetworkEvent.Context ctx = ev.getSource().get();
+            ctx.setPacketHandled(true);
+            var packet = deserializePacket(ev.getPayload());
+            var player = ctx.getSender();
+            ctx.enqueueWork(() -> {
+                try {
+                    packet.serverPacketData(player);
+                } catch (final IllegalArgumentException e) {
+                    LOG.warn(String.valueOf(e));
+                }
+            });
+        } catch (final RunningOnDifferentThreadException ignored) {
+
+        }
     }
 
-    /**
-     * Registers bidirectional packets. These packets should be created as records that implement both {@link ServerboundPacket} and {@link ClientboundPacket} interfaces.
-     * @param registrar The registrar, used to register the packet.
-     * @param type The packet's type. Constructed using {@link CustomAppEngPayload#createType(String)}.
-     * @param codec The {@link StreamCodec} that encodes/decodes the packet.
-     * @param <T> The packet's class.
-     */
-    protected static <T extends ServerboundPacket & ClientboundPacket> void bidirectional(
-            PayloadRegistrar registrar,
-            CustomPacketPayload.Type<T> type,
-            StreamCodec<RegistryFriendlyByteBuf, T> codec) {
-        registrar.playBidirectional(type, codec, (payload, context) -> {
-            if (context.flow().isClientbound()) {
-                payload.handleOnClient(context);
-            } else if (context.flow().isServerbound()) {
-                payload.handleOnServer(context);
+    @SubscribeEvent
+    public void clientPacket(NetworkEvent.ServerCustomPayloadEvent ev) {
+        if (ev instanceof NetworkEvent.ServerCustomPayloadLoginEvent) {
+            return;
+        }
+        if (this.clientHandler != null) {
+            try {
+                NetworkEvent.Context ctx = ev.getSource().get();
+                ctx.setPacketHandled(true);
+
+                var packet = deserializePacket(ev.getPayload());
+
+                ctx.enqueueWork(() -> this.clientHandler.accept(packet));
+            } catch (RunningOnDifferentThreadException ignored) {
+
             }
-        });
+        }
+    }
+
+    private AddonPacket deserializePacket(FriendlyByteBuf payload) {
+        var packetId = payload.readInt();
+        return factoryMap.get(packetId).apply(payload);
+    }
+
+    public void sendToAll(AddonPacket message) {
+        var server = AppEng.instance().getCurrentServer();
+        if (server != null) {
+            try {
+                var id = getPacketId(message.getClass());
+                server.getPlayerList()
+                        .broadcastAll(message.toPacket(id, NetworkDirection.PLAY_TO_CLIENT, this.channel));
+            } catch (Exception e) {
+                // Already handled
+            }
+        }
+    }
+
+    public void sendTo(AddonPacket message, ServerPlayer player) {
+        try {
+            var id = getPacketId(message.getClass());
+            player.connection.send(message.toPacket(id, NetworkDirection.PLAY_TO_CLIENT, this.channel));
+        } catch (Exception e) {
+            // Already handled
+        }
+    }
+
+    public void sendToAllAround(AddonPacket message, TargetPoint point) {
+        var server = AppEng.instance().getCurrentServer();
+        if (server != null) {
+            try {
+                var id = getPacketId(message.getClass());
+                Packet<?> pkt = message.toPacket(id, NetworkDirection.PLAY_TO_CLIENT, this.channel);
+                server.getPlayerList()
+                        .broadcast(point.excluded, point.x, point.y, point.z, point.r2, point.level.dimension(), pkt);
+            } catch (Exception e) {
+                // Already handled
+            }
+        }
+    }
+
+    public void sendToServer(AddonPacket message) {
+        assert Minecraft.getInstance().getConnection() != null;
+        try {
+            var id = getPacketId(message.getClass());
+            Minecraft.getInstance()
+                    .getConnection()
+                    .send(message.toPacket(id, NetworkDirection.PLAY_TO_SERVER, this.channel));
+        } catch (Exception e) {
+            // Already handled
+        }
+    }
+
+    private int getPacketId(Class<? extends AddonPacket> c) {
+        var id = idMap.getOrDefault(c, -1);
+        if (id == -1) {
+            LOG.error("Unregistered packet with of class {}", c.getName());
+        }
+        return id;
     }
 }

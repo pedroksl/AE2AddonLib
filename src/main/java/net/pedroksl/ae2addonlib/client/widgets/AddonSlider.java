@@ -12,17 +12,16 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
+import net.pedroksl.ae2addonlib.AE2AddonLib;
 import net.pedroksl.ae2addonlib.util.Colors;
 
 import appeng.client.Point;
 import appeng.client.gui.ICompositeWidget;
-import appeng.core.AppEng;
 
 /**
  * A configurable and extendable slider.
@@ -32,8 +31,9 @@ public class AddonSlider implements ICompositeWidget {
     /**
      * Resource locations of the slider's textures
      */
-    protected static final WidgetSprites SPRITES = new WidgetSprites(
-            AppEng.makeId("button"), AppEng.makeId("button_disabled"), AppEng.makeId("button_highlighted"));
+    private static final ResourceLocation BUTTON = AE2AddonLib.makeId("textures/guis/button.png");
+
+    private static final ResourceLocation BUTTON_DISABLED = AE2AddonLib.makeId("textures/guis/button_disabled.png");
 
     private static final int HANDLE_WIDTH = 8;
     private static final int HANDLE_HALF_WIDTH = 4;
@@ -191,11 +191,7 @@ public class AddonSlider implements ICompositeWidget {
         var minX = bounds.getX() + this.position.getX();
         var minY = bounds.getY() + this.position.getY();
 
-        this.isHovered = guiGraphics.containsPointInScissor(mouseX, mouseY)
-                && mouseX >= minX
-                && mouseY >= minY
-                && mouseX < minX + this.width
-                && mouseY < minY + this.height;
+        this.isHovered = mouseX >= minX && mouseY >= minY && mouseX < minX + this.width && mouseY < minY + this.height;
 
         renderWidget(guiGraphics, new Point(minX, minY), mouse);
     }
@@ -247,12 +243,16 @@ public class AddonSlider implements ICompositeWidget {
         guiGraphics.setColor(1.0F, 1.0F, 1.0F, this.alpha);
         RenderSystem.enableBlend();
         RenderSystem.enableDepthTest();
-        guiGraphics.blitSprite(
+        guiGraphics.blit(
                 this.getHandleSprite(),
                 minX + (int) (this.value * (double) (this.width - HANDLE_WIDTH)),
                 minSliderY - 1,
-                HANDLE_WIDTH,
-                this.height - 8);
+                0,
+                0,
+                8,
+                12,
+                8,
+                12);
     }
 
     private String getValueText(double value) {
@@ -315,7 +315,7 @@ public class AddonSlider implements ICompositeWidget {
 
     private void setFractionalValue(double fractionalValue) {
         double oldValue = this.value;
-        this.value = this.snapToNearest(Math.clamp(fractionalValue, 0f, 1f));
+        this.value = this.snapToNearest(Mth.clamp(fractionalValue, 0f, 1f));
         if (!Mth.equal(oldValue, this.value)) {
             this.applyValue();
         }
@@ -365,6 +365,6 @@ public class AddonSlider implements ICompositeWidget {
      * @return The selected texture's {@link ResourceLocation}.
      */
     protected @NotNull ResourceLocation getHandleSprite() {
-        return SPRITES.get(this.isVisible(), this.isHovered);
+        return this.isHovered ? BUTTON : BUTTON_DISABLED;
     }
 }

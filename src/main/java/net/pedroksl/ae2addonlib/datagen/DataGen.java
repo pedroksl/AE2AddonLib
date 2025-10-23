@@ -1,16 +1,15 @@
 package net.pedroksl.ae2addonlib.datagen;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.data.event.GatherDataEvent;
+import net.minecraftforge.data.event.GatherDataEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 import net.pedroksl.ae2addonlib.AE2AddonLib;
 
 /**
  * Datagen class used to generate the lib's language files.
  */
 @SuppressWarnings("unused")
-@EventBusSubscriber(modid = AE2AddonLib.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = AE2AddonLib.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class DataGen {
 
     /**

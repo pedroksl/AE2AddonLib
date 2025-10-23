@@ -13,16 +13,16 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.loading.FMLEnvironment;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.minecraftforge.registries.DeferredRegister;
 import net.pedroksl.ae2addonlib.registry.helpers.FluidDefinition;
 import net.pedroksl.ae2addonlib.registry.helpers.ICreativeTabItem;
+import net.pedroksl.ae2addonlib.registry.helpers.LibBlockDefinition;
+import net.pedroksl.ae2addonlib.registry.helpers.LibItemDefinition;
 
 import appeng.block.AEBaseBlock;
 import appeng.block.AEBaseBlockItem;
-import appeng.core.definitions.BlockDefinition;
-import appeng.core.definitions.ItemDefinition;
 import appeng.items.AEBaseItem;
 
 /**
@@ -74,16 +74,13 @@ public class CreativeTabRegistry {
      * Convenience method that will look for the implementations of #addToMainCreativeTab or their overrides for every
      * registered item, block or fluid. If an item doesn't extend from {@link AEBaseItem}, it can be marked with
      * {@link ICreativeTabItem} to add their own implementation of #addToMainCreativeTab.
-     * @param modId
-     * @param params
-     * @param output
      */
     private static void populateTab(
             String modId, CreativeModeTab.ItemDisplayParameters params, CreativeModeTab.Output output) {
-        var itemDefs = new ArrayList<ItemDefinition<?>>();
+        var itemDefs = new ArrayList<LibItemDefinition<?>>();
         itemDefs.addAll(ItemRegistry.getItems(modId));
         itemDefs.addAll(BlockRegistry.getBlocks(modId).stream()
-                .map(BlockDefinition::item)
+                .map(LibBlockDefinition::item)
                 .toList());
         itemDefs.addAll(FluidRegistry.getFluids(modId).stream()
                 .map(FluidDefinition::bucketItemId)
@@ -94,9 +91,9 @@ public class CreativeTabRegistry {
 
             // For block items, the block controls the creative tab
             if (item instanceof AEBaseBlockItem baseItem && baseItem.getBlock() instanceof AEBaseBlock baseBlock) {
-                baseBlock.addToMainCreativeTab(params, output);
+                baseBlock.addToMainCreativeTab(output);
             } else if (item instanceof AEBaseItem baseItem) {
-                baseItem.addToMainCreativeTab(params, output);
+                baseItem.addToMainCreativeTab(output);
             } else if (item instanceof ICreativeTabItem creativeTabItem) {
                 creativeTabItem.addToMainCreativeTab(params, output);
             } else {

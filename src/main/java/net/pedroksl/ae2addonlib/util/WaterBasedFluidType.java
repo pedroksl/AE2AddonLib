@@ -7,8 +7,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.material.FluidState;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.neoforged.neoforge.fluids.FluidType;
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.minecraftforge.fluids.FluidType;
 import net.pedroksl.ae2addonlib.AE2AddonLib;
 
 /**
@@ -18,7 +18,7 @@ import net.pedroksl.ae2addonlib.AE2AddonLib;
  */
 public class WaterBasedFluidType extends FluidType implements IClientFluidTypeExtensions {
 
-    private final ResourceLocation UNDERWATER_LOCATION = ResourceLocation.parse("textures/misc/underwater.png");
+    private final ResourceLocation UNDERWATER_LOCATION = new ResourceLocation("textures/misc/underwater.png");
     private final ResourceLocation WATER_STILL = AE2AddonLib.makeId("block/water_still");
     private final ResourceLocation WATER_FLOW = AE2AddonLib.makeId("block/water_flowing");
     private final ResourceLocation WATER_OVERLAY = AE2AddonLib.makeId("block/water_overlay");

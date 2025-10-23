@@ -1,6 +1,6 @@
 package net.pedroksl.ae2addonlib.api;
 
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidStack;
 
 /**
  * Marks a screen as compatible with {@link net.pedroksl.ae2addonlib.client.widgets.FluidTankSlot}.

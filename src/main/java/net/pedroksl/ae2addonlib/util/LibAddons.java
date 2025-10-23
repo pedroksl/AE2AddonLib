@@ -5,7 +5,7 @@ package net.pedroksl.ae2addonlib.util;
  */
 public enum LibAddons implements AddonEnum {
     /**
-     * Dark mode everywhere entry, used to disable dark mode using {@link net.neoforged.fml.InterModComms}.
+     * Dark mode everywhere entry, used to disable dark mode using {@link net.minecraftforge.fml.InterModComms}.
      */
     DARKMODEEVERYWHERE("Dark Mode Everywhere");
 

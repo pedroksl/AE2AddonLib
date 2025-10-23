@@ -33,12 +33,12 @@ public class BlockUpgradeItem extends AEBaseItem {
      */
     protected void replaceTile(
             Level world, BlockPos pos, BlockEntity oldTile, BlockEntity newTile, BlockState newBlock) {
-        CompoundTag contents = oldTile.saveWithFullMetadata(world.registryAccess());
+        CompoundTag contents = oldTile.serializeNBT();
         world.removeBlockEntity(pos);
         world.removeBlock(pos, false);
         world.setBlock(pos, newBlock, 3);
         world.setBlockEntity(newTile);
-        newTile.loadWithComponents(contents, world.registryAccess());
+        newTile.deserializeNBT(contents);
         if (newTile instanceof AEBaseBlockEntity aeTile) {
             aeTile.markForUpdate();
         } else {

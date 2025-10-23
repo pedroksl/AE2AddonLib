@@ -1,8 +1,6 @@
 package net.pedroksl.ae2addonlib.network;
 
-import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.pedroksl.ae2addonlib.AE2AddonLib;
-import net.pedroksl.ae2addonlib.network.clientPacket.FluidTankClientAudioPacket;
 import net.pedroksl.ae2addonlib.network.clientPacket.FluidTankStackUpdatePacket;
 import net.pedroksl.ae2addonlib.network.clientPacket.OutputDirectionUpdatePacket;
 import net.pedroksl.ae2addonlib.network.serverPacket.AddonConfigButtonPacket;
@@ -24,13 +22,13 @@ public class LibNetworkHandler extends NetworkHandler {
     }
 
     @Override
-    public void onRegister(PayloadRegistrar registrar) {
-        clientbound(registrar, FluidTankClientAudioPacket.TYPE, FluidTankClientAudioPacket.STREAM_CODEC);
-        clientbound(registrar, FluidTankStackUpdatePacket.TYPE, FluidTankStackUpdatePacket.STREAM_CODEC);
-        clientbound(registrar, OutputDirectionUpdatePacket.TYPE, OutputDirectionUpdatePacket.STREAM_CODEC);
+    public void init() {
+        // registerPacket(FluidTankClientAudioPacket.class, FluidTankClientAudioPacket::new);
+        registerPacket(FluidTankStackUpdatePacket.class, FluidTankStackUpdatePacket::new);
+        registerPacket(OutputDirectionUpdatePacket.class, OutputDirectionUpdatePacket::new);
 
-        serverbound(registrar, AddonConfigButtonPacket.TYPE, AddonConfigButtonPacket.STREAM_CODEC);
-        serverbound(registrar, FluidTankItemUsePacket.TYPE, FluidTankItemUsePacket.STREAM_CODEC);
-        serverbound(registrar, AddonHotkeyPacket.TYPE, AddonHotkeyPacket.STREAM_CODEC);
+        registerPacket(AddonConfigButtonPacket.class, AddonConfigButtonPacket::new);
+        registerPacket(FluidTankItemUsePacket.class, FluidTankItemUsePacket::new);
+        registerPacket(AddonHotkeyPacket.class, AddonHotkeyPacket::new);
     }
 }

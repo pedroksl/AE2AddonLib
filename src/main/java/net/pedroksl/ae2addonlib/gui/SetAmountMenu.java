@@ -2,8 +2,7 @@ package net.pedroksl.ae2addonlib.gui;
 
 import java.util.Objects;
 import java.util.function.Consumer;
-
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nullable;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
@@ -19,7 +18,7 @@ import appeng.menu.ISubMenu;
 import appeng.menu.MenuOpener;
 import appeng.menu.SlotSemantics;
 import appeng.menu.guisync.GuiSync;
-import appeng.menu.locator.MenuHostLocator;
+import appeng.menu.locator.MenuLocator;
 import appeng.menu.slot.InaccessibleSlot;
 import appeng.util.inv.AppEngInternalInventory;
 
@@ -86,7 +85,7 @@ public class SetAmountMenu extends AEBaseMenu implements ISubMenu {
      * @param consumer A method to be run after the user selects the desired amount.
      */
     public static void open(
-            ServerPlayer player, MenuHostLocator locator, GenericStack stack, Consumer<GenericStack> consumer) {
+            ServerPlayer player, MenuLocator locator, GenericStack stack, Consumer<GenericStack> consumer) {
         open(player, locator, stack, consumer, null, -1);
     }
 
@@ -102,7 +101,7 @@ public class SetAmountMenu extends AEBaseMenu implements ISubMenu {
      */
     public static void open(
             ServerPlayer player,
-            MenuHostLocator locator,
+            MenuLocator locator,
             GenericStack stack,
             Consumer<GenericStack> consumer,
             ISetAmountMenuHost menuToReturnTo,

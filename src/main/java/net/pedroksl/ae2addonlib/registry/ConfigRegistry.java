@@ -1,10 +1,10 @@
 package net.pedroksl.ae2addonlib.registry;
 
-import net.neoforged.neoforge.common.ModConfigSpec;
-import net.neoforged.neoforge.common.ModConfigSpec.BooleanValue;
-import net.neoforged.neoforge.common.ModConfigSpec.DoubleValue;
-import net.neoforged.neoforge.common.ModConfigSpec.EnumValue;
-import net.neoforged.neoforge.common.ModConfigSpec.IntValue;
+import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
+import net.minecraftforge.common.ForgeConfigSpec.DoubleValue;
+import net.minecraftforge.common.ForgeConfigSpec.EnumValue;
+import net.minecraftforge.common.ForgeConfigSpec.IntValue;
 
 /**
  * Helper class with useful config builder methods.
@@ -20,7 +20,7 @@ public class ConfigRegistry {
      * @return A {@link BooleanValue} config.
      */
     protected static BooleanValue define(
-            ModConfigSpec.Builder builder, String name, boolean defaultValue, String comment) {
+            ForgeConfigSpec.Builder builder, String name, boolean defaultValue, String comment) {
         builder.comment(comment);
         return define(builder, name, defaultValue);
     }
@@ -32,7 +32,7 @@ public class ConfigRegistry {
      * @param defaultValue A default value to initialize the config.
      * @return A {@link BooleanValue} config.
      */
-    protected static BooleanValue define(ModConfigSpec.Builder builder, String name, boolean defaultValue) {
+    protected static BooleanValue define(ForgeConfigSpec.Builder builder, String name, boolean defaultValue) {
         return builder.define(name, defaultValue);
     }
 
@@ -44,7 +44,7 @@ public class ConfigRegistry {
      * @param comment A comment string that should be created for this config.
      * @return A {@link IntValue} config.
      */
-    protected static IntValue define(ModConfigSpec.Builder builder, String name, int defaultValue, String comment) {
+    protected static IntValue define(ForgeConfigSpec.Builder builder, String name, int defaultValue, String comment) {
         builder.comment(comment);
         return define(builder, name, defaultValue);
     }
@@ -60,7 +60,7 @@ public class ConfigRegistry {
      * @return A {@link IntValue} config.
      */
     protected static IntValue define(
-            ModConfigSpec.Builder builder, String name, int defaultValue, int min, int max, String comment) {
+            ForgeConfigSpec.Builder builder, String name, int defaultValue, int min, int max, String comment) {
         builder.comment(comment);
         return define(builder, name, defaultValue, min, max);
     }
@@ -74,7 +74,7 @@ public class ConfigRegistry {
      * @param max The maximum allowed value.
      * @return A {@link IntValue} config.
      */
-    protected static IntValue define(ModConfigSpec.Builder builder, String name, int defaultValue, int min, int max) {
+    protected static IntValue define(ForgeConfigSpec.Builder builder, String name, int defaultValue, int min, int max) {
         return builder.defineInRange(name, defaultValue, min, max);
     }
 
@@ -85,7 +85,7 @@ public class ConfigRegistry {
      * @param defaultValue A default value to initialize the config.
      * @return A {@link IntValue} config.
      */
-    protected static IntValue define(ModConfigSpec.Builder builder, String name, int defaultValue) {
+    protected static IntValue define(ForgeConfigSpec.Builder builder, String name, int defaultValue) {
         return define(builder, name, defaultValue, Integer.MIN_VALUE, Integer.MAX_VALUE);
     }
 
@@ -97,8 +97,8 @@ public class ConfigRegistry {
      * @param comment A comment string that should be created for this config.
      * @return A {@link BooleanValue} config.
      */
-    protected static ModConfigSpec.DoubleValue define(
-            ModConfigSpec.Builder builder, String name, double defaultValue, String comment) {
+    protected static ForgeConfigSpec.DoubleValue define(
+            ForgeConfigSpec.Builder builder, String name, double defaultValue, String comment) {
         builder.comment(comment);
         return define(builder, name, defaultValue);
     }
@@ -110,7 +110,8 @@ public class ConfigRegistry {
      * @param defaultValue A default value to initialize the config.
      * @return A {@link DoubleValue} config.
      */
-    protected static ModConfigSpec.DoubleValue define(ModConfigSpec.Builder builder, String name, double defaultValue) {
+    protected static ForgeConfigSpec.DoubleValue define(
+            ForgeConfigSpec.Builder builder, String name, double defaultValue) {
         return define(builder, name, defaultValue, Double.MIN_VALUE, Double.MAX_VALUE);
     }
 
@@ -124,8 +125,8 @@ public class ConfigRegistry {
      * @param comment A comment string that should be created for this config.
      * @return A {@link BooleanValue} config.
      */
-    protected static ModConfigSpec.DoubleValue define(
-            ModConfigSpec.Builder builder, String name, double defaultValue, double min, double max, String comment) {
+    protected static ForgeConfigSpec.DoubleValue define(
+            ForgeConfigSpec.Builder builder, String name, double defaultValue, double min, double max, String comment) {
         builder.comment(comment);
         return define(builder, name, defaultValue, min, max);
     }
@@ -139,8 +140,8 @@ public class ConfigRegistry {
      * @param max The maximum allowed value.
      * @return A {@link BooleanValue} config.
      */
-    protected static ModConfigSpec.DoubleValue define(
-            ModConfigSpec.Builder builder, String name, double defaultValue, double min, double max) {
+    protected static ForgeConfigSpec.DoubleValue define(
+            ForgeConfigSpec.Builder builder, String name, double defaultValue, double min, double max) {
         return builder.defineInRange(name, defaultValue, min, max);
     }
 
@@ -152,8 +153,8 @@ public class ConfigRegistry {
      * @param <T> The enum class
      * @return A {@link EnumValue} config.
      */
-    protected static <T extends Enum<T>> ModConfigSpec.EnumValue<T> defineEnum(
-            ModConfigSpec.Builder builder, String name, T defaultValue) {
+    protected static <T extends Enum<T>> ForgeConfigSpec.EnumValue<T> defineEnum(
+            ForgeConfigSpec.Builder builder, String name, T defaultValue) {
         return builder.defineEnum(name, defaultValue);
     }
 
@@ -166,8 +167,8 @@ public class ConfigRegistry {
      * @param <T> The enum class
      * @return A {@link EnumValue} config.
      */
-    protected static <T extends Enum<T>> ModConfigSpec.EnumValue<T> defineEnum(
-            ModConfigSpec.Builder builder, String name, T defaultValue, String comment) {
+    protected static <T extends Enum<T>> ForgeConfigSpec.EnumValue<T> defineEnum(
+            ForgeConfigSpec.Builder builder, String name, T defaultValue, String comment) {
         builder.comment(comment);
         return defineEnum(builder, name, defaultValue);
     }

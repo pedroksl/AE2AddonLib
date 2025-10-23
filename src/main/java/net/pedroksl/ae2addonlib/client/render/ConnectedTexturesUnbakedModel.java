@@ -34,7 +34,10 @@ public class ConnectedTexturesUnbakedModel implements UnbakedModel {
 
     @Override
     public @Nullable BakedModel bake(
-            ModelBaker loader, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState) {
+            ModelBaker modelBaker,
+            Function<Material, TextureAtlasSprite> function,
+            ModelState modelState,
+            ResourceLocation resourceLocation) {
         return model;
     }
 }

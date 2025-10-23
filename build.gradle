@@ -4,7 +4,7 @@ import com.hypherionmc.modpublisher.properties.ModLoader
 plugins {
     id 'java-library'
     id 'maven-publish'
-    id 'net.neoforged.moddev' version '2.0.113'
+    id "net.neoforged.moddev.legacyforge"
     id 'com.diffplug.spotless'
     id 'idea'
     id "com.hypherionmc.modutils.modpublisher" version '2.1.8'
@@ -19,22 +19,21 @@ version = mod_version
 group = mod_group_id
 
 repositories {
-    // Add here additional repositories if required by some of the dependencies below.
+    mavenLocal()
+    maven {
+        name = "Modmaven"
+        url = "https://modmaven.dev/"
+    }
 }
 
 base {
     archivesName = mod_id
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
-neoForge {
-    version = project.neo_version
-
-    parchment {
-        mappingsVersion = project.parchment_mappings_version
-        minecraftVersion = project.parchment_minecraft_version
-    }
+legacyForge {
+    version = "${minecraft_version}-${neo_version}"
 
     runs {
         client {
@@ -104,35 +103,42 @@ configurations {
 }
 
 dependencies {
+    compileOnly 'org.jetbrains:annotations:24.1.0'
+
     implementation "org.appliedenergistics:guideme:${guide_me_version}"
-    api "org.appliedenergistics:appliedenergistics2:${ae2_version}"
+    implementation "appeng:appliedenergistics2-forge:${ae2_version}"
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
 // A missing property will result in an error. Properties are expanded using ${} Groovy notation.
-var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
-    var replaceProperties = [
-            minecraft_version      : minecraft_version,
-            minecraft_version_range: minecraft_version_range,
-            neo_version            : neo_version,
-            loader_version_range   : loader_version_range,
-            mod_id                 : mod_id,
-            mod_name               : mod_name,
-            mod_license            : mod_license,
-            mod_version            : mod_version,
-            mod_authors            : mod_authors,
-            mod_description        : mod_description
-    ]
-    inputs.properties replaceProperties
-    expand replaceProperties
-    from "src/main/templates"
-    into "build/generated/sources/modMetadata"
+Map<String, String> expansionVariables = [
+        minecraft_version      : minecraft_version,
+        minecraft_version_range: minecraft_version_range,
+        forge_version          : neo_version,
+        loader_version_range   : loader_version_range,
+        mod_id                 : mod_id,
+        mod_name               : mod_name,
+        mod_license            : mod_license,
+        mod_version            : mod_version,
+        mod_authors            : mod_authors,
+        mod_description        : mod_description,
+        ae2_version            : ae2_version
+]
+
+processResources {
+    exclude '.cache'
+    // Ensure the resources get re-evaluate when the version changes
+    for (var entry : expansionVariables.entrySet()) {
+        inputs.property(entry.key, entry.value)
+    }
+
+    filesMatching("META-INF/mods.toml") {
+        expand expansionVariables
+        filter { line ->
+            line.replace('version="0.0.0"', "version=\"${expansionVariables['project_version']}\"")
+        }
+    }
 }
-// Include the output of "generateModMetadata" as an input directory for the build
-// this works with both building through Gradle and the IDE.
-sourceSets.main.resources.srcDir generateModMetadata
-// To avoid having to run "generateModMetadata" manually, make it run on every project reload
-neoForge.ideSyncTask generateModMetadata
 
 tasks.register('javadocJar', Jar) {
     dependsOn javadoc
@@ -234,7 +240,7 @@ publisher {
     setCurseID("1366135")
     //setModrinthID("rxYaglEe")
     setVersionType("${project.version_type}")
-    setChangelog("https://raw.githubusercontent.com/pedroksl/AE2AddonLib/refs/heads/main/CHANGELOG.md")
+    setChangelog("https://raw.githubusercontent.com/pedroksl/AE2AddonLib/refs/heads/1.20.1/CHANGELOG.md")
     setVersion("${project.version}")
     setDisplayName("AE2AddonLib-${project.version}")
     setGameVersions("${project.minecraft_version}")
@@ -248,12 +254,13 @@ publisher {
     github {
         repo = "pedroksl/AE2AddonLib"
 
-        tag = "${project.version}-neoforge"
+        tag = "${project.version}-forge"
 
         createTag = true
         createRelease = true
         draft = false
         updateRelease = true
+        target = "1.20.1"
 
         displayName = "AE2AddonLib-${project.version}"
     }
@@ -265,6 +272,10 @@ publisher {
     modrinthDepends {
         required "ae2"
     }
+}
+
+tasks.withType(GenerateModuleMetadata) {
+    enabled = false
 }
 
 spotless {

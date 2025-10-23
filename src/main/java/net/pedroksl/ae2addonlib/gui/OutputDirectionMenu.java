@@ -10,8 +10,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import net.neoforged.neoforge.network.PacketDistributor;
 import net.pedroksl.ae2addonlib.api.IDirectionalOutputHost;
+import net.pedroksl.ae2addonlib.network.LibNetworkHandler;
 import net.pedroksl.ae2addonlib.network.clientPacket.OutputDirectionUpdatePacket;
 import net.pedroksl.ae2addonlib.registry.helpers.LibMenus;
 
@@ -19,7 +19,7 @@ import appeng.api.orientation.RelativeSide;
 import appeng.menu.AEBaseMenu;
 import appeng.menu.ISubMenu;
 import appeng.menu.MenuOpener;
-import appeng.menu.locator.MenuHostLocator;
+import appeng.menu.locator.MenuLocator;
 
 /**
  * The menu for a {@link net.pedroksl.ae2addonlib.client.screens.OutputDirectionScreen}.
@@ -71,7 +71,7 @@ public class OutputDirectionMenu extends AEBaseMenu implements ISubMenu {
      * @param locator The menu host locator.
      * @param allowedOutputs The initial value of the enabled/disabled outputs.
      */
-    public static void open(ServerPlayer player, MenuHostLocator locator, EnumSet<RelativeSide> allowedOutputs) {
+    public static void open(ServerPlayer player, MenuLocator locator, EnumSet<RelativeSide> allowedOutputs) {
         MenuOpener.open(LibMenus.OUTPUT_DIRECTION.get(), player, locator);
 
         if (player.containerMenu instanceof OutputDirectionMenu cca) {
@@ -87,7 +87,7 @@ public class OutputDirectionMenu extends AEBaseMenu implements ISubMenu {
      */
     public ItemStack getAdjacentBlock(RelativeSide side) {
         var dir = host.getOrientation().getSide(side);
-        BlockPos blockPos = host.getBlockPos().relative(dir);
+        BlockPos blockPos = host.getBlockPosition().relative(dir);
 
         Level level = getLevel();
         if (level == null) {
@@ -112,8 +112,8 @@ public class OutputDirectionMenu extends AEBaseMenu implements ISubMenu {
         super.broadcastChanges();
 
         if (isServerSide()) {
-            PacketDistributor.sendToPlayer(
-                    (ServerPlayer) getPlayer(), new OutputDirectionUpdatePacket(this.allowedOutputs));
+            LibNetworkHandler.INSTANCE.sendTo(
+                    new OutputDirectionUpdatePacket(this.allowedOutputs), (ServerPlayer) getPlayer());
         }
     }
 
@@ -159,7 +159,7 @@ public class OutputDirectionMenu extends AEBaseMenu implements ISubMenu {
         }
 
         this.getHost().updateOutputSides(allowedOutputs);
-        PacketDistributor.sendToPlayer(
-                (ServerPlayer) getPlayer(), new OutputDirectionUpdatePacket(this.allowedOutputs));
+        LibNetworkHandler.INSTANCE.sendTo(
+                new OutputDirectionUpdatePacket(this.allowedOutputs), (ServerPlayer) getPlayer());
     }
 }

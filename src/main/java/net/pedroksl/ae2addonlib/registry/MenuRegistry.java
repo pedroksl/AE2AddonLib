@@ -9,11 +9,10 @@ import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;
 
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.MenuType;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.loading.FMLEnvironment;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.minecraftforge.registries.DeferredRegister;
 
 import appeng.menu.AEBaseMenu;
 import appeng.menu.implementations.MenuTypeBuilder;
@@ -67,8 +66,8 @@ public abstract class MenuRegistry {
      */
     protected static <M extends AEBaseMenu, H> Supplier<MenuType<M>> create(
             String modId, String id, MenuTypeBuilder.MenuFactory<M, H> factory, Class<H> host) {
-        return getDR(modId).register(id, () -> MenuTypeBuilder.create(factory, host)
-                .build(ResourceLocation.fromNamespaceAndPath(modId, id)));
+        return getDR(modId)
+                .register(id, () -> MenuTypeBuilder.create(factory, host).build("ae2lib_" + id));
     }
 
     /**

@@ -10,19 +10,17 @@ import net.minecraft.network.chat.Component;
 import net.pedroksl.ae2addonlib.datagen.LibText;
 
 import appeng.client.gui.Icon;
-import appeng.client.gui.widgets.IconButton;
 
 /**
  * Lib implementation of {@link appeng.client.gui.widgets.ActionButton }
  * This class provides an entry point for addons to register their appearances.
- * The intended use for this class is to reuse AE2's {@link Icon}s.
  */
-public class AddonActionButton extends IconButton {
+public class AddonActionButton extends AddonIconButton {
     private static final Pattern PATTERN_NEW_LINE = Pattern.compile("\\n", Pattern.LITERAL);
     /**
      * Member that holds the icon render for this button.
      */
-    protected final Icon icon;
+    protected final IBlitterIcon icon;
 
     /**
      * Convenience constructor that will encapsulate a {@link Runnable} into a
@@ -49,12 +47,12 @@ public class AddonActionButton extends IconButton {
         if (action instanceof AddonActionItems item) {
             switch (item) {
                 case FLUID_FLUSH -> {
-                    icon = Icon.S_CLEAR;
+                    icon = LibIcons.CLEAR_SMALL;
                     displayName = LibText.ClearButton.text();
                     displayValue = LibText.ClearFluidButtonHint.text();
                 }
                 case CLEAR -> {
-                    icon = Icon.S_CLEAR;
+                    icon = LibIcons.CLEAR_SMALL;
                     displayName = LibText.ClearButton.text();
                     displayValue = LibText.ClearSidesButtonHint.text();
                 }
@@ -89,7 +87,7 @@ public class AddonActionButton extends IconButton {
      * @return The {@link Icon} of this button.
      */
     @Override
-    protected Icon getIcon() {
+    protected IBlitterIcon getIcon() {
         return icon;
     }
 
@@ -116,9 +114,9 @@ public class AddonActionButton extends IconButton {
 
     /**
      * Record used to hold the parameters of each appearance.
-     * @param icon The {@link Icon} entry for this button.
+     * @param icon The {@link IBlitterIcon} entry for this button.
      * @param title The text that will be used as a title for the tooltip of this button.
      * @param hint The text remaining text for this button.
      */
-    public record Appearance(Icon icon, Component title, Component hint) {}
+    public record Appearance(IBlitterIcon icon, Component title, Component hint) {}
 }

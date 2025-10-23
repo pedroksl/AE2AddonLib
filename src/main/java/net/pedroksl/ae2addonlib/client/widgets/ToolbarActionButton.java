@@ -74,11 +74,11 @@ public class ToolbarActionButton extends AddonIconButton {
      * @return The button appearance.
      */
     private ButtonAppearance getLibAppearance(IActionEnum action) {
-        return switch (action) {
-            case AddonActionItems.DIRECTIONAL_OUTPUT -> createApp(
+        if (action.equals(AddonActionItems.DIRECTIONAL_OUTPUT)) {
+            return createApp(
                     LibIcons.DIRECTION_OUTPUT, LibText.DirectionalOutput.text(), LibText.DirectionalOutputHint.text());
-            default -> null;
-        };
+        }
+        return null;
     }
 
     /**

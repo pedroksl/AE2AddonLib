@@ -14,9 +14,19 @@ public enum LibIcons implements IBlitterIcon {
     DIRECTION_OUTPUT(0, 0),
 
     /**
+     * The icon for a small icon with an x.
+     */
+    CLEAR_SMALL(0, 16),
+
+    /**
      * The icon for the background of a toolbar button.
      */
-    TOOLBAR_BUTTON_BACKGROUND(176, 128, 18, 20);
+    TOOLBAR_BUTTON_BACKGROUND(176, 128, 18, 18),
+
+    /**
+     * The icon for an enabled toolbar button.
+     */
+    TOOLBAR_BUTTON_ENABLED(194, 128, 18, 18);
 
     private final int x;
     private final int y;

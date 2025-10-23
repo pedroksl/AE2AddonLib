@@ -3,24 +3,25 @@ package net.pedroksl.ae2addonlib.registry;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 
 import com.mojang.logging.LogUtils;
 
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.loading.FMLEnvironment;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.pedroksl.ae2addonlib.registry.helpers.LibBlockDefinition;
+import net.pedroksl.ae2addonlib.registry.helpers.LibItemDefinition;
 
 import appeng.block.AEBaseBlock;
 import appeng.block.AEBaseBlockItem;
-import appeng.core.definitions.BlockDefinition;
-import appeng.core.definitions.ItemDefinition;
 
 /**
  * <p>Class responsible for the registering of blocks.</p>
@@ -31,8 +32,8 @@ import appeng.core.definitions.ItemDefinition;
 public class BlockRegistry {
     private static final Logger LOG = LogUtils.getLogger();
 
-    private static final Map<String, DeferredRegister.Blocks> DRMap = new HashMap<>();
-    private static final Map<String, List<BlockDefinition<?>>> BLOCKS = new HashMap<>();
+    private static final Map<String, DeferredRegister<Block>> DRMap = new HashMap<>();
+    private static final Map<String, List<LibBlockDefinition<?>>> BLOCKS = new HashMap<>();
     private final String modId;
 
     /**
@@ -47,11 +48,11 @@ public class BlockRegistry {
         }
 
         this.modId = modId;
-        DRMap.put(modId, DeferredRegister.createBlocks(modId));
+        DRMap.put(modId, DeferredRegister.create(ForgeRegistries.BLOCKS, modId));
         BLOCKS.put(modId, new ArrayList<>());
     }
 
-    static DeferredRegister.Blocks getDR(String modId) {
+    static DeferredRegister<Block> getDR(String modId) {
         var dr = DRMap.getOrDefault(modId, null);
         if (dr == null) {
             LOG.error("Tried to access uninitialized deferred register with mod id {}", modId);
@@ -62,18 +63,18 @@ public class BlockRegistry {
 
     /**
      * Non-static version of {@link #getBlocks(String)}.
-     * @return A list containing all registered {@link BlockDefinition}s.
+     * @return A list containing all registered {@link LibBlockDefinition}s.
      */
-    public List<BlockDefinition<?>> getBlocks() {
+    public List<LibBlockDefinition<?>> getBlocks() {
         return getBlocks(this.modId);
     }
 
     /**
      * Helper method to create a collection of all registered blocks.
      * @param modId The MOD_ID of the requesting mod.
-     * @return A list containing all registered {@link BlockDefinition}s.
+     * @return A list containing all registered {@link LibBlockDefinition}s.
      */
-    public static List<BlockDefinition<?>> getBlocks(String modId) {
+    public static List<LibBlockDefinition<?>> getBlocks(String modId) {
         return Collections.unmodifiableList(BLOCKS.getOrDefault(modId, new ArrayList<>()));
     }
 
@@ -85,9 +86,9 @@ public class BlockRegistry {
      * @param id The id of the registered block.
      * @param blockSupplier The constructor of the block.
      * @param <T> Block class that extended {@link Block}.
-     * @return The {@link BlockDefinition} containing all relevant information for this block.
+     * @return The {@link LibBlockDefinition} containing all relevant information for this block.
      */
-    protected static <T extends Block> BlockDefinition<T> block(
+    protected static <T extends Block> LibBlockDefinition<T> block(
             String modId, String englishName, String id, Supplier<T> blockSupplier) {
         return block(modId, englishName, id, blockSupplier, null);
     }
@@ -100,9 +101,9 @@ public class BlockRegistry {
      * @param blockSupplier The constructor of the block.
      * @param itemFactory The item construction factory.
      * @param <T> Block class that extends {@link Block}.
-     * @return The {@link BlockDefinition} containing all relevant information for this block.
+     * @return The {@link LibBlockDefinition} containing all relevant information for this block.
      */
-    protected static <T extends Block> BlockDefinition<T> block(
+    protected static <T extends Block> LibBlockDefinition<T> block(
             String modId,
             String englishName,
             String id,
@@ -115,7 +116,7 @@ public class BlockRegistry {
             if (itemFactory != null) {
                 var item = itemFactory.apply(block, new Item.Properties());
                 if (item == null) {
-                    var rl = ResourceLocation.fromNamespaceAndPath(getDR(modId).getNamespace(), id);
+                    var rl = new ResourceLocation(modId, id);
                     throw new IllegalArgumentException("BlockItem factory for " + rl + " return null");
                 }
                 return item;
@@ -126,8 +127,8 @@ public class BlockRegistry {
             }
         });
 
-        var definition =
-                new BlockDefinition<>(englishName, deferredBlock, new ItemDefinition<>(englishName, deferredItem));
+        var definition = new LibBlockDefinition<>(
+                englishName, deferredBlock, new LibItemDefinition<>(englishName, deferredItem));
         BLOCKS.get(modId).add(definition);
         return definition;
     }

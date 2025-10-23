@@ -24,7 +24,7 @@ public interface IDirectionalOutputHost extends ISubMenuHost {
      * Getter for the block position.
      * @return The block position.
      */
-    BlockPos getBlockPos();
+    BlockPos getBlockPosition();
 
     /**
      * Getter for the current state of the allowed outputs.

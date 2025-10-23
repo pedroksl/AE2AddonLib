@@ -1,37 +1,41 @@
 package net.pedroksl.ae2addonlib.network.serverPacket;
 
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
 import net.pedroksl.ae2addonlib.client.Hotkeys;
+import net.pedroksl.ae2addonlib.network.AddonPacket;
 import net.pedroksl.ae2addonlib.registry.HotkeyRegistry;
 
 import appeng.core.AELog;
 import appeng.core.localization.PlayerMessages;
-import appeng.core.network.CustomAppEngPayload;
-import appeng.core.network.ServerboundPacket;
 
 /**
- * Record used to define the packet used to handle hotkeys pressed on the server. It is sent automatically whenever
+ * Class used to define the packet used to handle hotkeys pressed on the server. It is sent automatically whenever
  * a registered key is pressed.
- * @param modId The MOD_ID of the mod related to the pressed hotkey.
- * @param hotkey The registered id of the hotkey.
  */
-public record AddonHotkeyPacket(String modId, String hotkey) implements ServerboundPacket {
-    public static final StreamCodec<RegistryFriendlyByteBuf, AddonHotkeyPacket> STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.STRING_UTF8,
-            AddonHotkeyPacket::modId,
-            ByteBufCodecs.STRING_UTF8,
-            AddonHotkeyPacket::hotkey,
-            AddonHotkeyPacket::new);
+public class AddonHotkeyPacket extends AddonPacket {
 
-    public static final Type<AddonHotkeyPacket> TYPE = CustomAppEngPayload.createType("lib_hotkey");
+    private final String modId;
+    private final String hotkey;
 
-    @Override
-    public Type<AddonHotkeyPacket> type() {
-        return TYPE;
+    /**
+     * Constructs the packet from data in the stream.
+     * @param stream The data stream.
+     */
+    public AddonHotkeyPacket(FriendlyByteBuf stream) {
+        this.modId = stream.readUtf();
+        this.hotkey = stream.readUtf();
+    }
+
+    /**
+     * Constructs the packet to send to the stream.
+     * @param modId The MOD_ID of the mod related to the pressed hotkey.
+     * @param hotkey The registered id of the hotkey.
+     */
+    public AddonHotkeyPacket(String modId, String hotkey) {
+        this.modId = modId;
+        this.hotkey = hotkey;
     }
 
     /**
@@ -42,7 +46,13 @@ public record AddonHotkeyPacket(String modId, String hotkey) implements Serverbo
         this(hotkey.modId(), hotkey.name());
     }
 
-    public void handleOnServer(ServerPlayer player) {
+    @Override
+    protected void write(FriendlyByteBuf stream) {
+        stream.writeUtf(modId);
+        stream.writeUtf(hotkey);
+    }
+
+    public void serverPacketData(ServerPlayer player) {
         var actions = HotkeyRegistry.REGISTRY.get(modId).get(hotkey);
         if (actions == null) {
             player.sendSystemMessage(PlayerMessages.UnknownHotkey.text()

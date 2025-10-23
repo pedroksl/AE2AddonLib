@@ -3,6 +3,8 @@ package net.pedroksl.ae2addonlib.client.render;
 import java.util.*;
 import javax.annotation.ParametersAreNonnullByDefault;
 
+import com.google.common.collect.Lists;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
@@ -21,12 +23,12 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.client.ChunkRenderTypeSet;
-import net.neoforged.neoforge.client.model.IDynamicBakedModel;
-import net.neoforged.neoforge.client.model.QuadTransformers;
-import net.neoforged.neoforge.client.model.data.ModelData;
-import net.neoforged.neoforge.client.model.data.ModelProperty;
-import net.neoforged.neoforge.client.model.pipeline.QuadBakingVertexConsumer;
+import net.minecraftforge.client.ChunkRenderTypeSet;
+import net.minecraftforge.client.model.IDynamicBakedModel;
+import net.minecraftforge.client.model.QuadTransformers;
+import net.minecraftforge.client.model.data.ModelData;
+import net.minecraftforge.client.model.data.ModelProperty;
+import net.minecraftforge.client.model.pipeline.QuadBakingVertexConsumer;
 
 /**
  * <p>A base baked model for blocks with connected textures.</p>
@@ -80,8 +82,7 @@ public abstract class ConnectedTexturesBaseBakedModel implements IDynamicBakedMo
     }
 
     /**
-     * overload of {@link #ConnectedTexturesBaseBakedModel(RenderType, RenderType, TextureAtlasSprite, TextureAtlasSprite, TextureAtlasSprite)}
-     * that takes different {@link RenderType}s for the face and sides.
+     * Constructor that takes different {@link RenderType}s for the face and sides.
      * @param faceRenderType The render type used to render the faces in this model.
      * @param sideRenderType The render type used to render the sides in this model.
      * @param face The texture atlas of the face.
@@ -247,7 +248,7 @@ public abstract class ConnectedTexturesBaseBakedModel implements IDynamicBakedMo
         var c3 = new Vector3f(cons.get(2)).sub(step);
         var c4 = new Vector3f(cons.get(3)).sub(step);
 
-        var builder = new QuadBakingVertexConsumer();
+        var builder = new QuadBakingVertexConsumer(quads::add);
         builder.setSprite(this.face);
         builder.setDirection(side);
         builder.setShade(true);
@@ -255,11 +256,9 @@ public abstract class ConnectedTexturesBaseBakedModel implements IDynamicBakedMo
         this.putVertex(builder, this.face, normal, c2.x(), c2.y(), c2.z(), 0, 1);
         this.putVertex(builder, this.face, normal, c3.x(), c3.y(), c3.z(), 1, 1);
         this.putVertex(builder, this.face, normal, c4.x(), c4.y(), c4.z(), 1, 0);
-        var quad = builder.bakeQuad();
         if (this.isFaceEmissive && powered) {
-            QuadTransformers.settingMaxEmissivity().processInPlace(quad);
+            QuadTransformers.settingMaxEmissivity().processInPlace(quads.get(quads.size() - 1));
         }
-        quads.add(quad);
 
         if (powered && this.faceAnimations != null && this.faceAnimations.get(side) != null) {
             var texture = this.faceAnimations.get(side);
@@ -271,11 +270,9 @@ public abstract class ConnectedTexturesBaseBakedModel implements IDynamicBakedMo
             this.putVertex(builder, texture, normal, c3.x(), c3.y(), c3.z(), 1, 1);
             this.putVertex(builder, texture, normal, c4.x(), c4.y(), c4.z(), 1, 0);
 
-            var aniQuad = builder.bakeQuad();
             if (this.isFaceAnimationEmissive) {
-                QuadTransformers.settingMaxEmissivity().processInPlace(aniQuad);
+                QuadTransformers.settingMaxEmissivity().processInPlace(quads.get(quads.size() - 1));
             }
-            quads.add(aniQuad);
         }
     }
 
@@ -284,7 +281,7 @@ public abstract class ConnectedTexturesBaseBakedModel implements IDynamicBakedMo
         if (index < 0) {
             return;
         }
-        var builder = new QuadBakingVertexConsumer();
+        var builder = new QuadBakingVertexConsumer(quads::add);
 
         var cons = this.calculateCorners(side, corner);
         var texture = powered ? this.poweredSides : this.sides;
@@ -334,22 +331,20 @@ public abstract class ConnectedTexturesBaseBakedModel implements IDynamicBakedMo
                 this.putVertex(builder, texture, normal, c4.x(), c4.y(), c4.z(), u0, v1);
             }
         }
-        var quad = builder.bakeQuad();
         if (this.isSideEmissive && powered) {
-            QuadTransformers.settingMaxEmissivity().processInPlace(quad);
+            QuadTransformers.settingMaxEmissivity().processInPlace(quads.get(quads.size() - 1));
         }
-        quads.add(quad);
     }
 
     private static EnumMap<Direction, List<Vector3f>> createFaceMap() {
         // spotless:off
         EnumMap<Direction, List<Vector3f>> map = new EnumMap<>(Direction.class);
         map.put(Direction.EAST, List.of(new Vector3f(1, 1, 1), new Vector3f(1, 0, 1), new Vector3f(1, 0, 0), new Vector3f(1, 1, 0)));
-        map.put(Direction.WEST, List.of(new Vector3f(0, 1, 1), new Vector3f(0, 0, 1), new Vector3f(0, 0, 0), new Vector3f(0, 1, 0)).reversed());
+        map.put(Direction.WEST, Lists.reverse(List.of(new Vector3f(0, 1, 1), new Vector3f(0, 0, 1), new Vector3f(0, 0, 0), new Vector3f(0, 1, 0))));
         map.put(Direction.UP, List.of(new Vector3f(1, 1, 1), new Vector3f(1, 1, 0), new Vector3f(0, 1, 0), new Vector3f(0, 1, 1)));
-        map.put(Direction.DOWN, List.of(new Vector3f(1, 0, 1), new Vector3f(1, 0, 0), new Vector3f(0, 0, 0), new Vector3f(0, 0, 1)).reversed());
+        map.put(Direction.DOWN, Lists.reverse(List.of(new Vector3f(1, 0, 1), new Vector3f(1, 0, 0), new Vector3f(0, 0, 0), new Vector3f(0, 0, 1))));
         map.put(Direction.SOUTH, List.of(new Vector3f(0, 1, 1), new Vector3f(0, 0, 1), new Vector3f(1, 0, 1), new Vector3f(1, 1, 1)));
-        map.put(Direction.NORTH, List.of(new Vector3f(0, 1, 0), new Vector3f(0, 0, 0), new Vector3f(1, 0, 0), new Vector3f(1, 1, 0)).reversed());
+        map.put(Direction.NORTH, Lists.reverse(List.of(new Vector3f(0, 1, 0), new Vector3f(0, 0, 0), new Vector3f(1, 0, 0), new Vector3f(1, 1, 0))));
         //spotless:on
         return map;
     }
@@ -394,12 +389,13 @@ public abstract class ConnectedTexturesBaseBakedModel implements IDynamicBakedMo
             float z,
             float u,
             float v) {
-        builder.addVertex(x, y, z);
-        builder.setColor(1.0f, 1.0f, 1.0f, 1.0f);
-        builder.setNormal((float) normal.getX(), (float) normal.getY(), (float) normal.getZ());
+        builder.vertex(x, y, z);
+        builder.color(1.0f, 1.0f, 1.0f, 1.0f);
+        builder.normal((float) normal.getX(), (float) normal.getY(), (float) normal.getZ());
         u = sprite.getU(u);
         v = sprite.getV(v);
-        builder.setUv(u, v);
+        builder.uv(u, v);
+        builder.endVertex();
     }
 
     private float getU0(int index) {
