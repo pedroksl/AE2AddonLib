@@ -11,6 +11,8 @@ import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.fluids.FluidType;
 import net.pedroksl.ae2addonlib.AE2AddonLib;
 
+import java.util.function.Consumer;
+
 /**
  * <p>Simple implementation of a water-based fluid.</p>
  * This class provides the basic components to render a fluid that uses the same textures as water.
@@ -37,32 +39,37 @@ public class WaterBasedFluidType extends FluidType implements IClientFluidTypeEx
     }
 
     @Override
-    public @NotNull ResourceLocation getStillTexture() {
-        return WATER_STILL;
-    }
+    public void initializeClient(Consumer<IClientFluidTypeExtensions> consumer) {
+        consumer.accept(new IClientFluidTypeExtensions() {
+            @Override
+            public @NotNull ResourceLocation getStillTexture() {
+                return WATER_STILL;
+            }
 
-    @Override
-    public @NotNull ResourceLocation getFlowingTexture() {
-        return WATER_FLOW;
-    }
+            @Override
+            public @NotNull ResourceLocation getFlowingTexture() {
+                return WATER_FLOW;
+            }
 
-    @Override
-    public ResourceLocation getOverlayTexture() {
-        return WATER_OVERLAY;
-    }
+            @Override
+            public ResourceLocation getOverlayTexture() {
+                return WATER_OVERLAY;
+            }
 
-    @Override
-    public ResourceLocation getRenderOverlayTexture(Minecraft mc) {
-        return UNDERWATER_LOCATION;
-    }
+            @Override
+            public ResourceLocation getRenderOverlayTexture(Minecraft mc) {
+                return UNDERWATER_LOCATION;
+            }
 
-    @Override
-    public int getTintColor() {
-        return tintColor;
-    }
+            @Override
+            public int getTintColor() {
+                return tintColor;
+            }
 
-    @Override
-    public int getTintColor(FluidState state, BlockAndTintGetter getter, BlockPos pos) {
-        return tintColor;
+            @Override
+            public int getTintColor(FluidState state, BlockAndTintGetter getter, BlockPos pos) {
+                return tintColor;
+            }
+        });
     }
 }

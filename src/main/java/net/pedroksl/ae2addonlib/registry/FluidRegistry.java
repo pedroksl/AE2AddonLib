@@ -111,7 +111,7 @@ public class FluidRegistry {
                 .register(
                         id + "_bucket",
                         () -> new BucketItem(
-                                source.get(),
+                                source,
                                 new Item.Properties()
                                         .craftRemainder(Items.BUCKET)
                                         .stacksTo(1)));
