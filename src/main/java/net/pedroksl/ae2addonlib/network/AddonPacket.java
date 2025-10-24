@@ -11,25 +11,51 @@ import net.minecraftforge.network.NetworkDirection;
 
 import io.netty.buffer.Unpooled;
 
+/**
+ * Base packet class used by {@link NetworkHandler}. Addon packets should extend this and implement either {@link #serverPacketData},
+ * {@link #clientPacketData} for server packets or client packets respectively, or both for bidirectional packets.
+ */
 public abstract class AddonPacket {
 
+    /**
+     * Holds the packet's data.
+     */
     private FriendlyByteBuf p;
 
+    /**
+     * Handler for server packets. Should be overridden by server packets or bidirectional packets.
+     * @param player The server player.
+     */
     public void serverPacketData(ServerPlayer player) {
         throw new UnsupportedOperationException("This packet does not implement a server side handler.");
     }
 
+    /**
+     * Handler for client packets. Should be overridden by client packets or bidirectional packets.
+     * @param player The local player.
+     */
     public void clientPacketData(Player player) {
         throw new UnsupportedOperationException("This packet does not implement a client side handler.");
     }
 
+    /**
+     * Method called when serializing the packet into the stream.
+     * @param stream The stream to write into.
+     */
     protected abstract void write(FriendlyByteBuf stream);
 
-    protected final void configureWrite(FriendlyByteBuf data) {
+    private void configureWrite(FriendlyByteBuf data) {
         data.capacity(data.readableBytes());
         this.p = data;
     }
 
+    /**
+     * Method called by {@link NetworkHandler} when serializing packets.
+     * @param packetId The packet id, known by the network handler.
+     * @param direction The direction of the connection.
+     * @param channel The channel used by this connection.
+     * @return A constructed packet.
+     */
     public Packet<?> toPacket(int packetId, NetworkDirection direction, ResourceLocation channel) {
         var data = new FriendlyByteBuf(Unpooled.buffer());
         data.writeInt(packetId);

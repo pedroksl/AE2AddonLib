@@ -1,5 +1,7 @@
 package net.pedroksl.ae2addonlib.util;
 
+import java.util.function.Consumer;
+
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.Minecraft;
@@ -10,8 +12,6 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.fluids.FluidType;
 import net.pedroksl.ae2addonlib.AE2AddonLib;
-
-import java.util.function.Consumer;
 
 /**
  * <p>Simple implementation of a water-based fluid.</p>

@@ -72,10 +72,15 @@ public abstract class NetworkHandler {
     /**
      * Entry point for addon packet registration. Override this and call the register methods inside.
      * Usage example: {@link LibNetworkHandler#init()}.
-     * This method should be called inside the common setup listener for your mod, as seen here: {@link net.pedroksl.ae2addonlib.AE2AddonLib#commonSetup(FMLCommonSetupEvent)}.
+     * This method should be called inside the common setup listener for your mod, as seen in: {@link net.pedroksl.ae2addonlib.AE2AddonLib#commonSetup(FMLCommonSetupEvent)}.
      */
     public abstract void init();
 
+    /**
+     * Method to register a packet.
+     * @param clazz The class of the packet.
+     * @param factory The constructor of the packet.
+     */
     protected void registerPacket(Class<? extends AddonPacket> clazz, Function<FriendlyByteBuf, AddonPacket> factory) {
         factoryMap.put(id, factory);
         idMap.put(clazz, id);
@@ -83,7 +88,7 @@ public abstract class NetworkHandler {
     }
 
     @SubscribeEvent
-    public void serverPacket(final NetworkEvent.ClientCustomPayloadEvent ev) {
+    private void serverPacket(final NetworkEvent.ClientCustomPayloadEvent ev) {
         try {
             NetworkEvent.Context ctx = ev.getSource().get();
             ctx.setPacketHandled(true);
@@ -102,7 +107,7 @@ public abstract class NetworkHandler {
     }
 
     @SubscribeEvent
-    public void clientPacket(NetworkEvent.ServerCustomPayloadEvent ev) {
+    private void clientPacket(NetworkEvent.ServerCustomPayloadEvent ev) {
         if (ev instanceof NetworkEvent.ServerCustomPayloadLoginEvent) {
             return;
         }
@@ -125,6 +130,10 @@ public abstract class NetworkHandler {
         return factoryMap.get(packetId).apply(payload);
     }
 
+    /**
+     * Sends a client packet to all players.
+     * @param message The packet to send.
+     */
     public void sendToAll(AddonPacket message) {
         var server = AppEng.instance().getCurrentServer();
         if (server != null) {
@@ -138,6 +147,11 @@ public abstract class NetworkHandler {
         }
     }
 
+    /**
+     * Sends a client packet to a players.
+     * @param message The packet to send.
+     * @param player The player to send the packet.
+     */
     public void sendTo(AddonPacket message, ServerPlayer player) {
         try {
             var id = getPacketId(message.getClass());
@@ -147,6 +161,11 @@ public abstract class NetworkHandler {
         }
     }
 
+    /**
+     * Sends a client packet to all players in an area.
+     * @param message The packet to send.
+     * @param point The taget point of the packet.
+     */
     public void sendToAllAround(AddonPacket message, TargetPoint point) {
         var server = AppEng.instance().getCurrentServer();
         if (server != null) {
@@ -161,6 +180,10 @@ public abstract class NetworkHandler {
         }
     }
 
+    /**
+     * Sends a packet to the server.
+     * @param message The packet to send.
+     */
     public void sendToServer(AddonPacket message) {
         assert Minecraft.getInstance().getConnection() != null;
         try {

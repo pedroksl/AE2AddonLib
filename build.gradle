@@ -166,7 +166,7 @@ tasks.register('publishEverywhere') {
 }
 
 tasks.javadoc {
-    (options as StandardJavadocDocletOptions).addStringOption("Xdoclint:all,-missing", '-Werror')
+    (options as StandardJavadocDocletOptions).addStringOption("Xdoclint:all", '-Werror')
     (options as StandardJavadocDocletOptions).addStringOption("Xmaxwarns", '500')
 }
 afterEvaluate {

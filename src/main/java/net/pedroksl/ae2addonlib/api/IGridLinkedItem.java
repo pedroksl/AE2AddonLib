@@ -34,6 +34,9 @@ import appeng.util.Platform;
  */
 public interface IGridLinkedItem {
 
+    /**
+     * Logger instance.
+     */
     Logger LOG = LoggerFactory.getLogger(IGridLinkedItem.class);
 
     /**
@@ -41,6 +44,9 @@ public interface IGridLinkedItem {
      */
     IGridLinkableHandler LINKABLE_HANDLER = new LinkableHandler();
 
+    /**
+     * Tag used to read/write linked global position.
+     */
     String TAG_ACCESS_POINT_POS = "accessPoint";
 
     /**

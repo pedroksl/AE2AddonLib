@@ -39,7 +39,11 @@ public record FluidDefinition<F extends Fluid, B extends LiquidBlock>(
         return this.sourceRegistry.getId();
     }
 
-    public final Holder<FluidType> fluidTypeId() {
+    /**
+     * Getter function.
+     * @return The holder of the {@link FluidType}.
+     */
+    public Holder<FluidType> fluidTypeId() {
         return this.fluidTypeRegistry.getHolder().orElseThrow();
     }
 
@@ -51,7 +55,11 @@ public record FluidDefinition<F extends Fluid, B extends LiquidBlock>(
         return this.fluidTypeRegistry.get();
     }
 
-    public final Holder<F> flowingId() {
+    /**
+     * Getter function.
+     * @return The holder of the flowing fluid.
+     */
+    public Holder<F> flowingId() {
         return this.flowingRegistry.getHolder().orElseThrow();
     }
 
@@ -63,7 +71,11 @@ public record FluidDefinition<F extends Fluid, B extends LiquidBlock>(
         return this.flowingRegistry.get();
     }
 
-    public final Holder<F> sourceId() {
+    /**
+     * Getter function.
+     * @return The holder of the source fluid.
+     */
+    public Holder<F> sourceId() {
         return this.sourceRegistry.getHolder().orElseThrow();
     }
 
@@ -75,11 +87,19 @@ public record FluidDefinition<F extends Fluid, B extends LiquidBlock>(
         return this.sourceRegistry.get();
     }
 
-    public final ResourceLocation blockResource() {
+    /**
+     * Getter function.
+     * @return The resource location of the fluid block.
+     */
+    public ResourceLocation blockResource() {
         return this.blockRegistry.getId();
     }
 
-    public final Holder<B> blockId() {
+    /**
+     * Getter function.
+     * @return The holder of the fluid block.
+     */
+    public Holder<B> blockId() {
         return this.blockRegistry.getHolder().orElseThrow();
     }
 
