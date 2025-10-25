@@ -1,0 +1,1 @@
+- Fixed connected texture baked model not ported correctly

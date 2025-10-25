@@ -253,9 +253,9 @@ public abstract class ConnectedTexturesBaseBakedModel implements IDynamicBakedMo
         builder.setDirection(side);
         builder.setShade(true);
         this.putVertex(builder, this.face, normal, c1.x(), c1.y(), c1.z(), 0, 0);
-        this.putVertex(builder, this.face, normal, c2.x(), c2.y(), c2.z(), 0, 1);
-        this.putVertex(builder, this.face, normal, c3.x(), c3.y(), c3.z(), 1, 1);
-        this.putVertex(builder, this.face, normal, c4.x(), c4.y(), c4.z(), 1, 0);
+        this.putVertex(builder, this.face, normal, c2.x(), c2.y(), c2.z(), 0, 16);
+        this.putVertex(builder, this.face, normal, c3.x(), c3.y(), c3.z(), 16, 16);
+        this.putVertex(builder, this.face, normal, c4.x(), c4.y(), c4.z(), 16, 0);
         if (this.isFaceEmissive && powered) {
             QuadTransformers.settingMaxEmissivity().processInPlace(quads.get(quads.size() - 1));
         }
@@ -266,9 +266,9 @@ public abstract class ConnectedTexturesBaseBakedModel implements IDynamicBakedMo
             builder.setDirection(side);
             builder.setShade(true);
             this.putVertex(builder, texture, normal, c1.x(), c1.y(), c1.z(), 0, 0);
-            this.putVertex(builder, texture, normal, c2.x(), c2.y(), c2.z(), 0, 1);
-            this.putVertex(builder, texture, normal, c3.x(), c3.y(), c3.z(), 1, 1);
-            this.putVertex(builder, texture, normal, c4.x(), c4.y(), c4.z(), 1, 0);
+            this.putVertex(builder, texture, normal, c2.x(), c2.y(), c2.z(), 0, 16);
+            this.putVertex(builder, texture, normal, c3.x(), c3.y(), c3.z(), 16, 16);
+            this.putVertex(builder, texture, normal, c4.x(), c4.y(), c4.z(), 16, 0);
 
             if (this.isFaceAnimationEmissive) {
                 QuadTransformers.settingMaxEmissivity().processInPlace(quads.get(quads.size() - 1));
@@ -400,29 +400,29 @@ public abstract class ConnectedTexturesBaseBakedModel implements IDynamicBakedMo
 
     private float getU0(int index) {
         return switch (index) {
-            case 1, 3 -> 0.5f;
+            case 1, 3 -> 8f;
             default -> 0;
         };
     }
 
     private float getU1(int index) {
         return switch (index) {
-            case 1, 3 -> 1;
-            default -> 0.5f;
+            case 1, 3 -> 16;
+            default -> 8f;
         };
     }
 
     private float getV0(int index) {
         return switch (index) {
-            case 2, 3 -> 0.5f;
+            case 2, 3 -> 8f;
             default -> 0;
         };
     }
 
     private float getV1(int index) {
         return switch (index) {
-            case 2, 3 -> 1;
-            default -> 0.5f;
+            case 2, 3 -> 16;
+            default -> 8f;
         };
     }
 
