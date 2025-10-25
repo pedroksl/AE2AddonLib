@@ -87,8 +87,12 @@ public abstract class NetworkHandler {
         id++;
     }
 
+    /**
+     * Event handler for server packets.
+     * @param ev The server packet event.
+     */
     @SubscribeEvent
-    private void serverPacket(final NetworkEvent.ClientCustomPayloadEvent ev) {
+    public void serverPacket(final NetworkEvent.ClientCustomPayloadEvent ev) {
         try {
             NetworkEvent.Context ctx = ev.getSource().get();
             ctx.setPacketHandled(true);
@@ -106,8 +110,12 @@ public abstract class NetworkHandler {
         }
     }
 
+    /**
+     * Event handler for client packets.
+     * @param ev The client packet event.
+     */
     @SubscribeEvent
-    private void clientPacket(NetworkEvent.ServerCustomPayloadEvent ev) {
+    public void clientPacket(NetworkEvent.ServerCustomPayloadEvent ev) {
         if (ev instanceof NetworkEvent.ServerCustomPayloadLoginEvent) {
             return;
         }
