@@ -4,3 +4,5 @@
 ## Bug Fixes
 - Fixed connected texture baked model not ported correctly
 - Fixed network handler having private access in event subscribers
+- Fixed back button in the wrong place in lib screens
+- Fixed output direction screen using wrong textures and buttons in the wrong place
