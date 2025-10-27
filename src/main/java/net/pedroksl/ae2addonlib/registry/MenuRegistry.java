@@ -67,7 +67,7 @@ public abstract class MenuRegistry {
     protected static <M extends AEBaseMenu, H> Supplier<MenuType<M>> create(
             String modId, String id, MenuTypeBuilder.MenuFactory<M, H> factory, Class<H> host) {
         return getDR(modId)
-                .register(id, () -> MenuTypeBuilder.create(factory, host).build("ae2lib_" + id));
+                .register(id, () -> MenuTypeBuilder.create(factory, host).build(modId + "_" + id));
     }
 
     /**
