@@ -1,5 +1,6 @@
 ## New Features
 - Added `IngredientStack` - A class designed to help in recipe serialization for machines that take non-one amounts of inputs of both items and fluids.
+- Added helper methods to `LibTags` to get tag values or a default when they aren't present.
 
 ## Bug Fixes
 - Fixed connected texture baked model not ported correctly
