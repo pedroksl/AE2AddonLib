@@ -18,6 +18,8 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.RunningOnDifferentThreadException;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -61,6 +63,7 @@ public abstract class NetworkHandler {
                 DistExecutor.unsafeRunForDist(() -> () -> NetworkHandler::onPacketData, () -> () -> pkt -> {});
     }
 
+    @OnlyIn(Dist.CLIENT)
     private static void onPacketData(AddonPacket packet) {
         try {
             packet.clientPacketData(Minecraft.getInstance().player);
