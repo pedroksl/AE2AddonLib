@@ -244,7 +244,7 @@ publisher {
     setVersion("${project.version}")
     setDisplayName("AE2AddonLib-${project.version}")
     setGameVersions("${project.minecraft_version}")
-    setLoaders(ModLoader.NEOFORGE)
+    setLoaders(ModLoader.FORGE, ModLoader.NEOFORGE)
     setCurseEnvironment("both")
     setArtifact("build/libs/${project.mod_name.replace(" ", "")}-${project.version}.jar")
     setDisableMalwareScanner(true)
