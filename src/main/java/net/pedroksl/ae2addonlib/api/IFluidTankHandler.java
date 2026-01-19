@@ -9,7 +9,8 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.pedroksl.ae2addonlib.client.widgets.FluidTankSlot;
+import net.pedroksl.ae2addonlib.network.LibNetworkHandler;
+import net.pedroksl.ae2addonlib.network.clientPacket.FluidTankClientAudioPacket;
 
 import appeng.api.config.Actionable;
 import appeng.api.stacks.AEFluidKey;
@@ -95,7 +96,7 @@ public interface IFluidTankHandler {
                         setCarriedItem(cap.getContainer());
 
                         if (inserted > 0) {
-                            FluidTankSlot.playDownSound(true);
+                            LibNetworkHandler.INSTANCE.sendTo(new FluidTankClientAudioPacket(true), getServerPlayer());
                         }
                     }
                 } else {
@@ -121,7 +122,7 @@ public interface IFluidTankHandler {
 
                             setCarriedItem(cap.getContainer());
 
-                            FluidTankSlot.playDownSound(false);
+                            LibNetworkHandler.INSTANCE.sendTo(new FluidTankClientAudioPacket(false), getServerPlayer());
                         }
                     }
                 }

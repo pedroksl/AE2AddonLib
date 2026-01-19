@@ -1,6 +1,7 @@
 package net.pedroksl.ae2addonlib.network;
 
 import net.pedroksl.ae2addonlib.AE2AddonLib;
+import net.pedroksl.ae2addonlib.network.clientPacket.FluidTankClientAudioPacket;
 import net.pedroksl.ae2addonlib.network.clientPacket.FluidTankStackUpdatePacket;
 import net.pedroksl.ae2addonlib.network.clientPacket.OutputDirectionUpdatePacket;
 import net.pedroksl.ae2addonlib.network.serverPacket.AddonConfigButtonPacket;
@@ -23,7 +24,7 @@ public class LibNetworkHandler extends NetworkHandler {
 
     @Override
     public void init() {
-        // registerPacket(FluidTankClientAudioPacket.class, FluidTankClientAudioPacket::new);
+        registerPacket(FluidTankClientAudioPacket.class, FluidTankClientAudioPacket::new);
         registerPacket(FluidTankStackUpdatePacket.class, FluidTankStackUpdatePacket::new);
         registerPacket(OutputDirectionUpdatePacket.class, OutputDirectionUpdatePacket::new);
 
