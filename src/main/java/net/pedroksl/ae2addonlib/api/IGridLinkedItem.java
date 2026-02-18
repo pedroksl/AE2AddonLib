@@ -102,6 +102,19 @@ public interface IGridLinkedItem {
     }
 
     /**
+     * Interface for implementers to add behavior after the linking process of the item.
+     * @param itemStack The item stack being linked.
+     * @param pos The global position being linked to.
+     */
+    default void onLink(ItemStack itemStack, GlobalPos pos) {}
+
+    /**
+     * Interface for implementers to add behavior before the unlinking process of the item.
+     * @param itemStack The item stack being unlinked.
+     */
+    default void onUnlink(ItemStack itemStack) {}
+
+    /**
      * Inner implementation of the {@link IGridLinkableHandler}.
      */
     final class LinkableHandler implements IGridLinkableHandler {
@@ -111,9 +124,15 @@ public interface IGridLinkedItem {
 
         public void link(ItemStack itemStack, GlobalPos pos) {
             itemStack.set(AEComponents.WIRELESS_LINK_TARGET, pos);
+            if (itemStack.getItem() instanceof IGridLinkedItem item) {
+                item.onLink(itemStack, pos);
+            }
         }
 
         public void unlink(ItemStack itemStack) {
+            if (itemStack.getItem() instanceof IGridLinkedItem item) {
+                item.onUnlink(itemStack);
+            }
             itemStack.remove(AEComponents.WIRELESS_LINK_TARGET);
         }
     }
