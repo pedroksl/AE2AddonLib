@@ -1,2 +1,2 @@
-## Bug Fixes
-- Fixed network class not loading in dedicated servers
+## Features
+- Moved sound play logic to using network packets
