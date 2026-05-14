@@ -10,10 +10,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
 import net.pedroksl.ae2addonlib.datagen.LibText;
+import net.pedroksl.ae2addonlib.util.Colors;
 
 import appeng.client.gui.style.ScreenStyle;
 import appeng.client.gui.widgets.ConfirmableTextField;
-import net.pedroksl.ae2addonlib.util.Colors;
 
 /**
  * Widget that creates a text input designed to receive hex color codes. It will accept up to 7 characters to house a possible "#" symbol.

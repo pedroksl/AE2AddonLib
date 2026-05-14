@@ -6,7 +6,8 @@ import net.minecraft.world.inventory.Slot;
 import appeng.menu.slot.ResizableSlot;
 
 public class ScreenUtil {
-    public static void renderSlotHighlight(GuiGraphicsExtractor guiGraphics, int offsetX, int offsetY, Slot slot, int highlightColor) {
+    public static void renderSlotHighlight(
+            GuiGraphicsExtractor guiGraphics, int offsetX, int offsetY, Slot slot, int highlightColor) {
         if (!slot.isHighlightable()) {
             return;
         }
