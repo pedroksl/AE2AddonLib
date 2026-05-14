@@ -48,7 +48,7 @@ public abstract class IngredientStack<T extends Predicate<P>, P> {
      * @return The converted ingredient.
      */
     public static Item of(ItemStack stack) {
-        return new Item(Ingredient.of(stack), stack.getCount());
+        return new Item(Ingredient.of(stack.getItem()), stack.getCount());
     }
 
     /**

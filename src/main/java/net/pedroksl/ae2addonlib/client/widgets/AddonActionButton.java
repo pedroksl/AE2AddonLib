@@ -9,8 +9,8 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
 import net.pedroksl.ae2addonlib.datagen.LibText;
 
-import appeng.client.gui.Icon;
 import appeng.client.gui.widgets.IconButton;
+import appeng.util.Icon;
 
 /**
  * Lib implementation of {@link appeng.client.gui.widgets.ActionButton }

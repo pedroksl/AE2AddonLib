@@ -7,10 +7,13 @@ import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.network.PacketDistributor;
-import net.pedroksl.ae2addonlib.network.clientPacket.FluidTankClientAudioPacket;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.fluid.FluidUtil;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
+import net.pedroksl.ae2addonlib.core.network.clientPacket.FluidTankClientAudioPacket;
 
 import appeng.api.config.Actionable;
 import appeng.api.stacks.AEFluidKey;
@@ -18,8 +21,9 @@ import appeng.api.stacks.GenericStack;
 import appeng.helpers.externalstorage.GenericStackInv;
 
 /**
- * Interface used in menus that contain {@link net.pedroksl.ae2addonlib.client.widgets.FluidTankSlot}s.
+ * Interface used in menus that contain FluidTankSlots.
  * Attaches the handler directly to the menu.
+ * @see net.pedroksl.ae2addonlib.client.widgets.FluidTankSlot
  */
 public interface IFluidTankHandler {
 
@@ -69,8 +73,9 @@ public interface IFluidTankHandler {
     default void onItemUse(int index, int button) {
         var stack = getCarriedItem();
         if (!stack.isEmpty()) {
-            var cap = stack.getCapability(Capabilities.FluidHandler.ITEM);
-            if (cap != null) {
+
+            var handler = ItemAccess.forStack(stack).oneByOne().getCapability(Capabilities.Fluid.ITEM);
+            if (handler != null) {
 
                 var tank = getTank();
                 if (tank == null) return;
@@ -84,44 +89,51 @@ public interface IFluidTankHandler {
                     if (genStack != null && genStack.what() != null) {
                         var fluid = ((AEFluidKey) genStack.what()).toStack((int) genStack.amount());
 
-                        var extracted = Math.min(genStack.amount(), 1000);
-                        var inserted = cap.fill(
-                                new FluidStack(fluid.getFluid(), (int) extracted), IFluidHandler.FluidAction.EXECUTE);
-                        var endAmount = genStack.amount() - inserted;
-                        if (endAmount > 0) {
-                            tank.setStack(index, new GenericStack(genStack.what(), genStack.amount() - inserted));
-                        } else {
-                            tank.setStack(index, null);
-                        }
+                        var extracted = Math.min(genStack.amount(), FluidType.BUCKET_VOLUME);
 
-                        setCarriedItem(cap.getContainer());
+                        try (var tx = Transaction.openRoot()) {
+                            int inserted = 0;
+                            if ((inserted = handler.insert(FluidResource.of(fluid), (int) extracted, tx)) == 0) {
+                                return;
+                            }
 
-                        if (inserted > 0) {
-                            PacketDistributor.sendToPlayer(getServerPlayer(), new FluidTankClientAudioPacket(true));
+                            var endAmount = genStack.amount() - inserted;
+                            if (endAmount > 0) {
+                                tank.setStack(index, new GenericStack(genStack.what(), genStack.amount() - inserted));
+                            } else {
+                                tank.setStack(index, null);
+                            }
+                            tx.commit();
+
+                            if (inserted > 0) {
+                                PacketDistributor.sendToPlayer(getServerPlayer(), new FluidTankClientAudioPacket(true));
+                            }
                         }
                     }
                 } else {
-                    if (!canInsertInto(index) || cap.getFluidInTank(0).isEmpty()) return;
+                    if (!canInsertInto(index)
+                            || FluidUtil.getFirstStackContained(stack).isEmpty()) return;
 
-                    var fluid = cap.getFluidInTank(0);
+                    var fluid = FluidUtil.getFirstStackContained(stack);
                     var genStack = GenericStack.fromFluidStack(fluid);
                     if (genStack != null && genStack.what() != null) {
-
-                        if (!cap.drain(
-                                        (int) tank.insert(index, genStack.what(), 1000, Actionable.SIMULATE),
-                                        IFluidHandler.FluidAction.SIMULATE)
-                                .isEmpty()) {
-
-                            var extracted = cap.drain(1000, IFluidHandler.FluidAction.EXECUTE)
-                                    .getAmount();
-                            var inserted = tank.insert(index, genStack.what(), extracted, Actionable.MODULATE);
-                            if (extracted - inserted > 0) {
-                                cap.fill(
-                                        new FluidStack(fluid.getFluid(), (int) (extracted - inserted)),
-                                        IFluidHandler.FluidAction.EXECUTE);
+                        try (var tx = Transaction.openRoot()) {
+                            int extracted = 0;
+                            if ((extracted = handler.extract(FluidResource.of(fluid), FluidType.BUCKET_VOLUME, tx))
+                                    == 0) {
+                                return;
                             }
 
-                            setCarriedItem(cap.getContainer());
+                            var inserted = tank.insert(index, genStack.what(), extracted, Actionable.MODULATE);
+                            var toReturn = extracted - inserted;
+                            if (toReturn > 0) {
+                                if (handler.insert(FluidResource.of(fluid), (int) (extracted - inserted), tx)
+                                        < toReturn) {
+                                    return;
+                                }
+                            }
+
+                            tx.commit();
 
                             PacketDistributor.sendToPlayer(getServerPlayer(), new FluidTankClientAudioPacket(true));
                         }

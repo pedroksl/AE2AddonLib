@@ -2,7 +2,7 @@ package net.pedroksl.ae2addonlib.util;
 
 import net.minecraft.data.recipes.RecipeOutput;
 import net.neoforged.fml.ModList;
-import net.neoforged.fml.loading.LoadingModList;
+import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.fml.loading.moddiscovery.ModInfo;
 import net.neoforged.neoforge.common.conditions.ModLoadedCondition;
 import net.neoforged.neoforge.common.conditions.NotCondition;
@@ -31,7 +31,9 @@ public interface AddonEnum {
     default boolean isLoaded() {
         return ModList.get() != null
                 ? ModList.get().isLoaded(getModId())
-                : LoadingModList.get().getMods().stream().map(ModInfo::getModId).anyMatch(getModId()::equals);
+                : FMLLoader.getCurrent().getLoadingModList().getMods().stream()
+                        .map(ModInfo::getModId)
+                        .anyMatch(getModId()::equals);
     }
 
     /**

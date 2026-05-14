@@ -2,13 +2,14 @@ package net.pedroksl.ae2addonlib.client;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Consumer;
 
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.KeyMapping;
-import net.neoforged.neoforge.network.PacketDistributor;
-import net.pedroksl.ae2addonlib.network.serverPacket.AddonHotkeyPacket;
+import net.minecraft.resources.Identifier;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.pedroksl.ae2addonlib.core.network.serverPacket.AddonHotkeyPacket;
 import net.pedroksl.ae2addonlib.registry.HotkeyRegistry;
 
 import appeng.api.features.HotkeyAction;
@@ -23,6 +24,7 @@ public class Hotkeys {
 
     private static final Map<String, AddonHotkey> HOTKEYS = new HashMap<>();
     private final String modId;
+    private final KeyMapping.Category category;
     private boolean finalized;
 
     /**
@@ -31,6 +33,7 @@ public class Hotkeys {
      */
     public Hotkeys(String modId) {
         this.modId = modId;
+        this.category = new KeyMapping.Category(Identifier.fromNamespaceAndPath(modId, "category"));
     }
 
     private AddonHotkey createHotkey(String id) {
@@ -39,8 +42,7 @@ public class Hotkeys {
         if (finalized) {
             throw new IllegalStateException("Hotkey registration already finalized!");
         }
-        return new AddonHotkey(
-                modId, id, new KeyMapping("key." + modId + "." + id, defaultHotkey, "key." + modId + ".category"));
+        return new AddonHotkey(modId, id, new KeyMapping("key." + modId + "." + id, defaultHotkey, this.category));
     }
 
     private void registerHotkey(AddonHotkey hotkey) {
@@ -50,11 +52,12 @@ public class Hotkeys {
     /**
      * <p>Finalizes the hotkey registration on the client instance.</p>
      * This method adds all pre-registered hotkeys to the actual hotkey pool.
-     * @param register The consumer of key mapping present in {@link net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent#register(KeyMapping)}.
+     * @param event The key registering event: {@link net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent}.
      */
-    public void finalizeRegistration(Consumer<KeyMapping> register) {
+    public void finalizeRegistration(RegisterKeyMappingsEvent event) {
+        event.registerCategory(this.category);
         for (var value : HOTKEYS.values()) {
-            register.accept(value.mapping());
+            event.register(value.mapping());
         }
         finalized = true;
     }
@@ -99,7 +102,7 @@ public class Hotkeys {
         public void check() {
             while (this.mapping().consumeClick()) {
                 ServerboundPacket message = new AddonHotkeyPacket(this);
-                PacketDistributor.sendToServer(message);
+                ClientPacketDistributor.sendToServer(message);
             }
         }
     }

@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.renderer.Rect2i;
@@ -158,7 +158,7 @@ public class CompositeWidgetContainer implements ICompositeWidget {
     }
 
     @Override
-    public void drawBackgroundLayer(GuiGraphics guiGraphics, Rect2i bounds, Point mouse) {
+    public void drawBackgroundLayer(GuiGraphicsExtractor guiGraphics, Rect2i bounds, Point mouse) {
         for (var widget : widgets.values()) {
             if (widget.isVisible()) {
                 widget.drawBackgroundLayer(guiGraphics, bounds, mouse);
@@ -167,7 +167,7 @@ public class CompositeWidgetContainer implements ICompositeWidget {
     }
 
     @Override
-    public void drawForegroundLayer(GuiGraphics poseStack, Rect2i bounds, Point mouse) {
+    public void drawForegroundLayer(GuiGraphicsExtractor poseStack, Rect2i bounds, Point mouse) {
         for (var widget : widgets.values()) {
             if (widget.isVisible()) {
                 widget.drawForegroundLayer(poseStack, bounds, mouse);

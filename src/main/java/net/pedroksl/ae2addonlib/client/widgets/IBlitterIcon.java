@@ -1,7 +1,7 @@
 package net.pedroksl.ae2addonlib.client.widgets;
 
 import net.minecraft.client.renderer.Rect2i;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import appeng.client.gui.style.Blitter;
 
@@ -12,9 +12,9 @@ public interface IBlitterIcon {
 
     /**
      * Gets the icon texture.
-     * @return The icon texture's {@link ResourceLocation}
+     * @return The icon texture's {@link Identifier}
      */
-    ResourceLocation getTexture();
+    Identifier getTexture();
 
     /**
      * Gets the texture size.

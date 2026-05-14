@@ -5,18 +5,19 @@ import java.text.DecimalFormat;
 import java.util.function.Consumer;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.systems.RenderSystem;
 
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.renderer.Rect2i;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.pedroksl.ae2addonlib.util.Colors;
 
@@ -184,7 +185,7 @@ public class AddonSlider implements ICompositeWidget {
     }
 
     @Override
-    public void drawBackgroundLayer(GuiGraphics guiGraphics, Rect2i bounds, Point mouse) {
+    public void drawBackgroundLayer(GuiGraphicsExtractor guiGraphics, Rect2i bounds, Point mouse) {
         var mouseX = bounds.getX() + mouse.getX();
         var mouseY = bounds.getY() + mouse.getY();
 
@@ -206,7 +207,7 @@ public class AddonSlider implements ICompositeWidget {
      * @param topLeft Top-left anchors point.
      * @param mouse Mouse position.
      */
-    protected void renderWidget(GuiGraphics guiGraphics, Point topLeft, Point mouse) {
+    protected void renderWidget(GuiGraphicsExtractor guiGraphics, Point topLeft, Point mouse) {
         var minX = topLeft.getX();
         var minY = topLeft.getY();
 
@@ -228,31 +229,30 @@ public class AddonSlider implements ICompositeWidget {
         guiGraphics.fill(minX - 1, minSliderY - 1, maxX + 1, maxY + 1, backColor);
 
         // Render guide lines for the slider
-        guiGraphics.hLine(minX, maxX - 1, middleY, lineColor);
-        guiGraphics.vLine(minX, minSliderY, maxY, lineColor);
-        guiGraphics.vLine(maxX - 1, minSliderY, maxY, lineColor);
+        guiGraphics.horizontalLine(minX, maxX - 1, middleY, lineColor);
+        guiGraphics.verticalLine(minX, minSliderY, maxY, lineColor);
+        guiGraphics.verticalLine(maxX - 1, minSliderY, maxY, lineColor);
 
         // Render min/max text values
         Font font = Minecraft.getInstance().font;
         String minText = getValueText(this.minValue);
-        guiGraphics.drawString(font, minText, minX, minY, lineColor, false);
+        guiGraphics.text(font, minText, minX, minY, lineColor, false);
         String maxText = getValueText(this.maxValue);
-        guiGraphics.drawString(font, maxText, maxX - font.width(maxText), minY, lineColor, false);
+        guiGraphics.text(font, maxText, maxX - font.width(maxText), minY, lineColor, false);
 
         // Render current value text
         String currentText = getValueText(this.getValue());
-        guiGraphics.drawString(font, currentText, middleX - font.width(currentText) / 2, minY, lineColor, false);
+        guiGraphics.text(font, currentText, middleX - font.width(currentText) / 2, minY, lineColor, false);
 
         // Render the handle
-        guiGraphics.setColor(1.0F, 1.0F, 1.0F, this.alpha);
-        RenderSystem.enableBlend();
-        RenderSystem.enableDepthTest();
         guiGraphics.blitSprite(
+                RenderPipelines.GUI_TEXTURED,
                 this.getHandleSprite(),
                 minX + (int) (this.value * (double) (this.width - HANDLE_WIDTH)),
-                minSliderY - 1,
+                minSliderY,
                 HANDLE_WIDTH,
-                this.height - 8);
+                this.height - 8,
+                ARGB.white(this.alpha));
     }
 
     private String getValueText(double value) {
@@ -362,9 +362,9 @@ public class AddonSlider implements ICompositeWidget {
 
     /**
      * Gets the correct texture based on the current state.
-     * @return The selected texture's {@link ResourceLocation}.
+     * @return The selected texture's {@link Identifier}.
      */
-    protected @NotNull ResourceLocation getHandleSprite() {
+    protected @NotNull Identifier getHandleSprite() {
         return SPRITES.get(this.isVisible(), this.isHovered);
     }
 }

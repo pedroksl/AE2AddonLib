@@ -3,7 +3,7 @@ package net.pedroksl.ae2addonlib.client.widgets;
 import java.util.function.BiConsumer;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.renderer.Rect2i;
 import net.pedroksl.ae2addonlib.util.Colors;
@@ -148,7 +148,7 @@ public class ColorPicker extends CompositeWidgetContainer {
     }
 
     @Override
-    public void drawBackgroundLayer(GuiGraphics guiGraphics, Rect2i bounds, Point mouse) {
+    public void drawBackgroundLayer(GuiGraphicsExtractor guiGraphics, Rect2i bounds, Point mouse) {
         super.drawBackgroundLayer(guiGraphics, bounds, mouse);
 
         Point pos = this.style.resolve(bounds);
@@ -158,7 +158,7 @@ public class ColorPicker extends CompositeWidgetContainer {
                 minX - 1, minY - 1, minX + this.width + 1, minY + PREVIEW_ROW_HEIGHT + 1, Colors.DARK_GRAY_BLUE.rgb());
         guiGraphics.fill(minX, minY, minX + this.width, minY + PREVIEW_ROW_HEIGHT, this.color);
 
-        guiGraphics.drawString(
+        guiGraphics.text(
                 Minecraft.getInstance().font,
                 "Hex:",
                 pos.getX(),

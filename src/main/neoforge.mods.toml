@@ -14,18 +14,18 @@ license="${mod_license}"
 [[dependencies.${mod_id}]] #optional
     modId="neoforge" #mandatory
     type="required" #mandatory
-    versionRange="[${neo_version},)" #mandatory
+    versionRange="${neoforge_version_range}" #mandatory
     ordering="NONE"
     side="BOTH"
 [[dependencies.${mod_id}]]
     modId="minecraft"
     type="required"
-    versionRange="${minecraft_version_range}"
+    versionRange="${minecraft_version}"
     ordering="NONE"
     side="BOTH"
 [[dependencies.${mod_id}]]
     modId="ae2"
     type="required"
-    versionRange="[19.2.16,)"
+    versionRange="${ae2_version}"
     ordering="AFTER"
     side="BOTH"

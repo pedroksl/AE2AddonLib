@@ -1,15 +1,12 @@
 package net.pedroksl.ae2addonlib.util;
 
-import org.jetbrains.annotations.NotNull;
-
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.BlockAndTintGetter;
-import net.minecraft.world.level.material.FluidState;
+import net.minecraft.client.renderer.block.FluidModel;
+import net.minecraft.client.resources.model.sprite.Material;
+import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.fluids.FluidType;
-import net.pedroksl.ae2addonlib.AE2AddonLib;
+import net.pedroksl.ae2addonlib.core.AE2AddonLib;
 
 /**
  * <p>Simple implementation of a water-based fluid.</p>
@@ -18,10 +15,10 @@ import net.pedroksl.ae2addonlib.AE2AddonLib;
  */
 public class WaterBasedFluidType extends FluidType implements IClientFluidTypeExtensions {
 
-    private final ResourceLocation UNDERWATER_LOCATION = ResourceLocation.parse("textures/misc/underwater.png");
-    private final ResourceLocation WATER_STILL = AE2AddonLib.makeId("block/water_still");
-    private final ResourceLocation WATER_FLOW = AE2AddonLib.makeId("block/water_flowing");
-    private final ResourceLocation WATER_OVERLAY = AE2AddonLib.makeId("block/water_overlay");
+    private final Identifier UNDERWATER_LOCATION = Identifier.withDefaultNamespace("textures/misc/underwater.png");
+    private final Material WATER_STILL = new Material(AE2AddonLib.makeId("block/water_still"));
+    private final Material WATER_FLOW = new Material(AE2AddonLib.makeId("block/water_flowing"));
+    private final Material WATER_OVERLAY = new Material(AE2AddonLib.makeId("block/water_overlay"));
 
     /**
      * The color used to tint the fluid.
@@ -37,32 +34,11 @@ public class WaterBasedFluidType extends FluidType implements IClientFluidTypeEx
     }
 
     @Override
-    public @NotNull ResourceLocation getStillTexture() {
-        return WATER_STILL;
-    }
-
-    @Override
-    public @NotNull ResourceLocation getFlowingTexture() {
-        return WATER_FLOW;
-    }
-
-    @Override
-    public ResourceLocation getOverlayTexture() {
-        return WATER_OVERLAY;
-    }
-
-    @Override
-    public ResourceLocation getRenderOverlayTexture(Minecraft mc) {
+    public Identifier getRenderOverlayTexture(Minecraft mc) {
         return UNDERWATER_LOCATION;
     }
 
-    @Override
-    public int getTintColor() {
-        return tintColor;
-    }
-
-    @Override
-    public int getTintColor(FluidState state, BlockAndTintGetter getter, BlockPos pos) {
-        return tintColor;
+    public FluidModel.Unbaked getFluidModel() {
+        return new FluidModel.Unbaked(WATER_STILL, WATER_FLOW, WATER_OVERLAY, (_) -> tintColor);
     }
 }

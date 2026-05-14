@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
@@ -18,6 +19,7 @@ import appeng.menu.AEBaseMenu;
 import appeng.menu.ISubMenu;
 import appeng.menu.MenuOpener;
 import appeng.menu.SlotSemantics;
+import appeng.menu.guisync.ClientActionKey;
 import appeng.menu.guisync.GuiSync;
 import appeng.menu.locator.MenuHostLocator;
 import appeng.menu.slot.InaccessibleSlot;
@@ -31,7 +33,7 @@ public class SetAmountMenu extends AEBaseMenu implements ISubMenu {
 
     private final ISubMenuHost host;
 
-    private static final String ACTION_SET_STOCK_AMOUNT = "setStockAmount";
+    private static final ClientActionKey<Long> ACTION_SET_STOCK_AMOUNT = new ClientActionKey<>("setStockAmount");
     private GenericStack stack;
     private Consumer<GenericStack> consumer;
     private final Slot itemSlot;
@@ -69,7 +71,7 @@ public class SetAmountMenu extends AEBaseMenu implements ISubMenu {
         this.itemSlot = new InaccessibleSlot(new AppEngInternalInventory(1), 0);
         this.addSlot(this.itemSlot, SlotSemantics.MACHINE_OUTPUT);
 
-        registerClientAction(ACTION_SET_STOCK_AMOUNT, Long.class, this::confirm);
+        registerClientAction(ACTION_SET_STOCK_AMOUNT, ByteBufCodecs.LONG, this::confirm);
     }
 
     @Override

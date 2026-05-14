@@ -14,8 +14,8 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ItemLike;
-import net.neoforged.neoforge.network.PacketDistributor;
-import net.pedroksl.ae2addonlib.network.serverPacket.AddonConfigButtonPacket;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.pedroksl.ae2addonlib.core.network.serverPacket.AddonConfigButtonPacket;
 
 import appeng.api.config.Setting;
 import appeng.client.gui.AEBaseScreen;
@@ -306,7 +306,7 @@ public class AddonSettingToggleButton<T extends Enum<T>> extends AddonIconButton
     private static <T extends Enum<T>> void sendToServer(
             AddonSettingToggleButton<T> button, boolean backwards, String modId) {
         ServerboundPacket message = new AddonConfigButtonPacket(modId, button.getSetting(), backwards);
-        PacketDistributor.sendToServer(message);
+        ClientPacketDistributor.sendToServer(message);
     }
 
     /**
@@ -315,7 +315,8 @@ public class AddonSettingToggleButton<T extends Enum<T>> extends AddonIconButton
      * @param item The appearance's item.
      * @param tooltipLines The list of text components for the tooltip.
      */
-    protected record ButtonAppearance(@Nullable IBlitterIcon icon, @Nullable Item item, List<Component> tooltipLines) {}
+    protected record ButtonAppearance(
+            @Nullable IBlitterIcon icon, @Nullable Item item, List<Component> tooltipLines) {}
 
     /**
      * Wrapper for a button constructor. Used to create instances of inheritor's linked to this class's {@link #sendToServer}.

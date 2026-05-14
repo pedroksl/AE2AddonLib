@@ -13,6 +13,7 @@ import net.pedroksl.ae2addonlib.datagen.LibText;
 
 import appeng.client.gui.style.ScreenStyle;
 import appeng.client.gui.widgets.ConfirmableTextField;
+import net.pedroksl.ae2addonlib.util.Colors;
 
 /**
  * Widget that creates a text input designed to receive hex color codes. It will accept up to 7 characters to house a possible "#" symbol.
@@ -39,8 +40,7 @@ public class HexColorInput extends ConfirmableTextField {
 
         setBordered(false);
         setMaxLength(7);
-        setTextColor(16777215);
-        setSelectionColor(-16777088);
+        setTextColor(Colors.WHITE.argb());
         setVisible(true);
         setResponder(text -> this.validate());
         setOnConfirm(() -> {

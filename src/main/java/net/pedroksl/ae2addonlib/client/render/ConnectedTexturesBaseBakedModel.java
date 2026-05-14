@@ -4,29 +4,29 @@ import java.util.*;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
 import it.unimi.dsi.fastutil.objects.Object2ReferenceMap;
 import it.unimi.dsi.fastutil.objects.Object2ReferenceOpenHashMap;
 
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.ItemOverrides;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.resources.model.SimpleModelWrapper;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.resources.model.geometry.QuadCollection;
+import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.client.ChunkRenderTypeSet;
-import net.neoforged.neoforge.client.model.IDynamicBakedModel;
-import net.neoforged.neoforge.client.model.QuadTransformers;
-import net.neoforged.neoforge.client.model.data.ModelData;
-import net.neoforged.neoforge.client.model.data.ModelProperty;
+import net.neoforged.neoforge.client.model.DynamicBlockStateModel;
 import net.neoforged.neoforge.client.model.pipeline.QuadBakingVertexConsumer;
+import net.neoforged.neoforge.model.data.ModelProperty;
+
+import appeng.client.render.MaterialUtil;
 
 /**
  * <p>A base baked model for blocks with connected textures.</p>
@@ -40,21 +40,19 @@ import net.neoforged.neoforge.client.model.pipeline.QuadBakingVertexConsumer;
  * The face texture should be a full 16x16 texture, while the texture for the sides should follow
  * <a href="https://github.com/pedroksl/AdvancedAE/blob/master/src/main/resources/assets/advanced_ae/textures/block/crafting/quantum_structure_formed_sides.png?raw=true">this pattern</a>
  */
-public abstract class ConnectedTexturesBaseBakedModel implements IDynamicBakedModel {
-    private final ChunkRenderTypeSet RENDER_TYPES;
-
+public abstract class ConnectedTexturesBaseBakedModel implements DynamicBlockStateModel {
     private static final Object2ReferenceMap<FaceCorner, List<Vector3f>> V_MAP = createVertexMap();
     private static final EnumMap<Direction, List<Vector3f>> F_MAP = createFaceMap();
-    private static final ModelProperty<Connect> CONNECT_STATE = new ModelProperty<>();
+    private static final ModelProperty<@NotNull Connect> CONNECT_STATE = new ModelProperty<>();
     private static final int LU = 0;
     private static final int RU = 1;
     private static final int LD = 2;
     private static final int RD = 4;
 
-    private final TextureAtlasSprite face;
-    private final TextureAtlasSprite sides;
-    private final TextureAtlasSprite poweredSides;
-    private HashMap<Direction, TextureAtlasSprite> faceAnimations;
+    private final Material.Baked face;
+    private final Material.Baked corners;
+    private final Material.Baked poweredSides;
+    private EnumMap<Direction, Material.Baked> faceAnimations;
 
     private boolean renderOppositeSide = false;
 
@@ -69,45 +67,50 @@ public abstract class ConnectedTexturesBaseBakedModel implements IDynamicBakedMo
      * Constructs a baked model with a single {@link RenderType} and textures for face, sides and powered textures.
      * @param renderType The render type use in this model.
      * @param face The texture atlas of the face.
-     * @param sides The texture atlas of the sides.
+     * @param corners The texture atlas of the sides.
      * @param poweredSides The texture atlas of the sides when powered.
      */
     protected ConnectedTexturesBaseBakedModel(
-            RenderType renderType, TextureAtlasSprite face, TextureAtlasSprite sides, TextureAtlasSprite poweredSides) {
-        this(ChunkRenderTypeSet.of(renderType), face, sides, poweredSides);
+            RenderType renderType, Material.Baked face, Material.Baked corners, Material.Baked poweredSides) {
+        this(face, corners, poweredSides);
         this.faceRenderType = renderType;
         this.sideRenderType = renderType;
     }
 
     /**
-     * overload of {@link #ConnectedTexturesBaseBakedModel(RenderType, RenderType, TextureAtlasSprite, TextureAtlasSprite, TextureAtlasSprite)}
+     * overload of {@link #ConnectedTexturesBaseBakedModel(RenderType, RenderType, Material.Baked, Material.Baked, Material.Baked)}
      * that takes different {@link RenderType}s for the face and sides.
      * @param faceRenderType The render type used to render the faces in this model.
      * @param sideRenderType The render type used to render the sides in this model.
      * @param face The texture atlas of the face.
-     * @param sides The texture atlas of the sides.
+     * @param corners The texture atlas of the sides.
      * @param poweredSides The texture atlas of the sides when powered.
      */
     protected ConnectedTexturesBaseBakedModel(
             RenderType faceRenderType,
             RenderType sideRenderType,
-            TextureAtlasSprite face,
-            TextureAtlasSprite sides,
-            TextureAtlasSprite poweredSides) {
-        this(ChunkRenderTypeSet.of(faceRenderType, sideRenderType), face, sides, poweredSides);
+            Material.Baked face,
+            Material.Baked corners,
+            Material.Baked poweredSides) {
+        this(face, corners, poweredSides);
         this.faceRenderType = faceRenderType;
         this.sideRenderType = sideRenderType;
     }
 
-    private ConnectedTexturesBaseBakedModel(
-            ChunkRenderTypeSet renderTypes,
-            TextureAtlasSprite face,
-            TextureAtlasSprite sides,
-            TextureAtlasSprite poweredSides) {
-        this.RENDER_TYPES = renderTypes;
+    private ConnectedTexturesBaseBakedModel(Material.Baked face, Material.Baked corners, Material.Baked poweredSides) {
         this.face = face;
-        this.sides = sides;
+        this.corners = corners;
         this.poweredSides = poweredSides;
+    }
+
+    @Override
+    public Material.Baked particleMaterial() {
+        return this.face;
+    }
+
+    @Override
+    public @BakedQuad.MaterialFlags int materialFlags() {
+        return MaterialUtil.getMaterialFlags(this.face);
     }
 
     /**
@@ -132,7 +135,7 @@ public abstract class ConnectedTexturesBaseBakedModel implements IDynamicBakedMo
      * @param faceAnimations The texture map for all directions.
      * @param emissive Should hte animations be emissive.
      */
-    protected void setFaceAnimation(HashMap<Direction, TextureAtlasSprite> faceAnimations, boolean emissive) {
+    protected void setFaceAnimation(EnumMap<Direction, Material.Baked> faceAnimations, boolean emissive) {
         this.faceAnimations = faceAnimations;
         this.isFaceAnimationEmissive = emissive;
     }
@@ -160,20 +163,23 @@ public abstract class ConnectedTexturesBaseBakedModel implements IDynamicBakedMo
     protected abstract boolean shouldBeEmissive(BlockState state);
 
     @Override
-    @NotNull
-    public ModelData getModelData(
-            @NotNull BlockAndTintGetter world,
-            @NotNull BlockPos pos,
-            @NotNull BlockState state,
-            @NotNull ModelData modelData) {
+    @ParametersAreNonnullByDefault
+    public void collectParts(
+            BlockAndTintGetter level,
+            BlockPos pos,
+            BlockState state,
+            RandomSource random,
+            List<BlockStateModelPart> parts) {
+        var extraData = level.getModelData(pos);
+
         var connect = new Connect();
         connect.init(pos);
         for (int x = -1; x <= 1; x++) {
             for (int y = -1; y <= 1; y++) {
                 for (int z = -1; z <= 1; z++) {
                     var offset = pos.offset(x, y, z);
-                    var block = world.getBlockState(offset)
-                            .getAppearance(world, offset, Direction.NORTH, state, pos)
+                    var block = level.getBlockState(offset)
+                            .getAppearance(level, offset, Direction.NORTH, state, pos)
                             .getBlock();
                     if (shouldConnect(block)) {
                         connect.set(x, y, z);
@@ -181,48 +187,34 @@ public abstract class ConnectedTexturesBaseBakedModel implements IDynamicBakedMo
                 }
             }
         }
-        return modelData.derive().with(CONNECT_STATE, connect).build();
-    }
 
-    @Override
-    public @NotNull List<BakedQuad> getQuads(
-            @Nullable BlockState blockState,
-            @Nullable Direction side,
-            @NotNull RandomSource randomSource,
-            @NotNull ModelData modelData,
-            @Nullable RenderType renderType) {
-        if (side == null) {
-            return Collections.emptyList();
-        }
-        var connect = modelData.get(CONNECT_STATE);
-        if (connect == null) {
-            return Collections.emptyList();
-        }
+        extraData.derive().with(CONNECT_STATE, connect).build();
+        var powered = shouldBeEmissive(state);
 
-        var powered = blockState != null && shouldBeEmissive(blockState);
-        List<BakedQuad> quads = new ArrayList<>();
-        if (renderType == null || RENDER_TYPES.contains(renderType)) {
-            if (renderType == this.faceRenderType) {
-                this.addQuad(quads, side, connect.getFace(side), powered);
-            }
+        var quadCollection = new QuadCollection.Builder();
+        for (var cullFace : Direction.values()) {
+            // Face
+            this.addQuad(quadCollection, cullFace, connect.getFace(cullFace), powered);
 
-            if (this.sides != null && renderType == this.sideRenderType) {
-                addSides(quads, connect, side, powered);
+            // Corners
+            if (this.corners != null) {
+                addSides(quadCollection, connect, cullFace, powered);
 
                 if (this.renderOppositeSide) {
-                    addSides(quads, connect, side.getOpposite(), powered, true);
+                    addSides(quadCollection, connect, cullFace.getOpposite(), powered, true);
                 }
             }
         }
-        return quads;
+
+        parts.add(new SimpleModelWrapper(quadCollection.build(), false, this.face));
     }
 
-    private void addSides(List<BakedQuad> quads, Connect connect, Direction side, boolean powered) {
+    private void addSides(QuadCollection.Builder quads, Connect connect, Direction side, boolean powered) {
         addSides(quads, connect, side, powered, false);
     }
 
     private void addSides(
-            List<BakedQuad> quads, Connect connect, Direction side, boolean powered, boolean renderOpposite) {
+            QuadCollection.Builder quads, Connect connect, Direction side, boolean powered, boolean renderOpposite) {
         this.addQuad(quads, side, connect.getIndex(side, LU), LU, powered, renderOpposite);
         this.addQuad(quads, side, connect.getIndex(side, RU), RU, powered, renderOpposite);
         this.addQuad(quads, side, connect.getIndex(side, LD), LD, powered, renderOpposite);
@@ -233,13 +225,13 @@ public abstract class ConnectedTexturesBaseBakedModel implements IDynamicBakedMo
         return V_MAP.get(new FaceCorner(face, corner));
     }
 
-    private void addQuad(List<BakedQuad> quads, Direction side, int index, boolean powered) {
+    private void addQuad(QuadCollection.Builder quads, Direction side, int index, boolean powered) {
         if (index < 0) {
             return;
         }
 
         var cons = F_MAP.get(side);
-        var normal = side.getNormal();
+        var normal = side.getUnitVec3i();
         // Render the face a fraction of a pixel inwards to avoid z-fighting
         var step = new Vector3f(getNormalStep(normal));
         var c1 = new Vector3f(cons.get(0)).sub(step);
@@ -255,11 +247,12 @@ public abstract class ConnectedTexturesBaseBakedModel implements IDynamicBakedMo
         this.putVertex(builder, this.face, normal, c2.x(), c2.y(), c2.z(), 0, 1);
         this.putVertex(builder, this.face, normal, c3.x(), c3.y(), c3.z(), 1, 1);
         this.putVertex(builder, this.face, normal, c4.x(), c4.y(), c4.z(), 1, 0);
-        var quad = builder.bakeQuad();
+
         if (this.isFaceEmissive && powered) {
-            QuadTransformers.settingMaxEmissivity().processInPlace(quad);
+            builder.setLightEmission(15);
         }
-        quads.add(quad);
+        var quad = builder.bakeQuad();
+        quads.addCulledFace(side, quad);
 
         if (powered && this.faceAnimations != null && this.faceAnimations.get(side) != null) {
             var texture = this.faceAnimations.get(side);
@@ -271,27 +264,32 @@ public abstract class ConnectedTexturesBaseBakedModel implements IDynamicBakedMo
             this.putVertex(builder, texture, normal, c3.x(), c3.y(), c3.z(), 1, 1);
             this.putVertex(builder, texture, normal, c4.x(), c4.y(), c4.z(), 1, 0);
 
-            var aniQuad = builder.bakeQuad();
             if (this.isFaceAnimationEmissive) {
-                QuadTransformers.settingMaxEmissivity().processInPlace(aniQuad);
+                builder.setLightEmission(15);
             }
-            quads.add(aniQuad);
+            var aniQuad = builder.bakeQuad();
+            quads.addCulledFace(side, aniQuad);
         }
     }
 
     private void addQuad(
-            List<BakedQuad> quads, Direction side, int index, int corner, boolean powered, boolean renderOpposite) {
+            QuadCollection.Builder quads,
+            Direction side,
+            int index,
+            int corner,
+            boolean powered,
+            boolean renderOpposite) {
         if (index < 0) {
             return;
         }
         var builder = new QuadBakingVertexConsumer();
 
         var cons = this.calculateCorners(side, corner);
-        var texture = powered ? this.poweredSides : this.sides;
+        var texture = powered ? this.poweredSides : this.corners;
         builder.setSprite(texture);
         builder.setDirection(side);
         builder.setShade(true);
-        var normal = side.getNormal();
+        var normal = side.getUnitVec3i();
         var c1 = renderOpposite ? cons.get(3) : cons.get(0);
         var c2 = renderOpposite ? cons.get(2) : cons.get(1);
         var c3 = renderOpposite ? cons.get(1) : cons.get(2);
@@ -334,11 +332,12 @@ public abstract class ConnectedTexturesBaseBakedModel implements IDynamicBakedMo
                 this.putVertex(builder, texture, normal, c4.x(), c4.y(), c4.z(), u0, v1);
             }
         }
-        var quad = builder.bakeQuad();
+
         if (this.isSideEmissive && powered) {
-            QuadTransformers.settingMaxEmissivity().processInPlace(quad);
+            builder.setLightEmission(15);
         }
-        quads.add(quad);
+        var quad = builder.bakeQuad();
+        quads.addCulledFace(side, quad);
     }
 
     private static EnumMap<Direction, List<Vector3f>> createFaceMap() {
@@ -387,7 +386,7 @@ public abstract class ConnectedTexturesBaseBakedModel implements IDynamicBakedMo
 
     private void putVertex(
             QuadBakingVertexConsumer builder,
-            TextureAtlasSprite sprite,
+            Material.Baked sprite,
             Vec3i normal,
             float x,
             float y,
@@ -397,8 +396,8 @@ public abstract class ConnectedTexturesBaseBakedModel implements IDynamicBakedMo
         builder.addVertex(x, y, z);
         builder.setColor(1.0f, 1.0f, 1.0f, 1.0f);
         builder.setNormal((float) normal.getX(), (float) normal.getY(), (float) normal.getZ());
-        u = sprite.getU(u);
-        v = sprite.getV(v);
+        u = sprite.sprite().getU(u);
+        v = sprite.sprite().getV(v);
         builder.setUv(u, v);
     }
 
@@ -468,7 +467,7 @@ public abstract class ConnectedTexturesBaseBakedModel implements IDynamicBakedMo
         }
 
         boolean blocked(Direction face) {
-            var pos = face.getNormal().offset(1, 1, 1);
+            var pos = face.getUnitVec3i().offset(1, 1, 1);
             return this.connects[pos.getX()][pos.getY()][pos.getZ()];
         }
 
@@ -526,42 +525,6 @@ public abstract class ConnectedTexturesBaseBakedModel implements IDynamicBakedMo
             }
             return -1;
         }
-    }
-
-    @Override
-    public boolean useAmbientOcclusion() {
-        return false;
-    }
-
-    @Override
-    public boolean isGui3d() {
-        return false;
-    }
-
-    @Override
-    public boolean isCustomRenderer() {
-        return false;
-    }
-
-    @Override
-    public @NotNull TextureAtlasSprite getParticleIcon() {
-        return this.sides;
-    }
-
-    @Override
-    public boolean usesBlockLight() {
-        return false;
-    }
-
-    @Override
-    public @NotNull ItemOverrides getOverrides() {
-        return ItemOverrides.EMPTY;
-    }
-
-    @ParametersAreNonnullByDefault
-    @Override
-    public @NotNull ChunkRenderTypeSet getRenderTypes(BlockState state, RandomSource rand, ModelData data) {
-        return RENDER_TYPES;
     }
 
     private Vector3f getNormalStep(Vec3i normal) {

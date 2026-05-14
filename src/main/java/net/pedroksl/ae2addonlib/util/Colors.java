@@ -2,9 +2,13 @@ package net.pedroksl.ae2addonlib.util;
 
 import java.awt.*;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 
 /**
@@ -97,6 +101,10 @@ public final class Colors {
      * The color blue.
      */
     public static final Colors BLUE = new Colors(0, 0, 255);
+
+    public static final Codec<Colors> CODEC = RecordCodecBuilder.create(
+            builder -> builder.group(ExtraCodecs.POSITIVE_INT.fieldOf("argb").forGetter(Colors::argb))
+                    .apply(builder, Colors::ofArgb));
 
     private final int red;
     private final int green;
@@ -202,7 +210,7 @@ public final class Colors {
      * @return The color in ARGB color space as an int value.
      */
     public int argb() {
-        return FastColor.ARGB32.color(this.alpha, this.red, this.green, this.blue);
+        return ARGB.color(this.alpha, this.red, this.green, this.blue);
     }
 
     /**
@@ -211,7 +219,7 @@ public final class Colors {
      * @return The color in ARGB color space as an int value.
      */
     public int argb(int alpha) {
-        return FastColor.ARGB32.color(alpha, this.red, this.green, this.blue);
+        return ARGB.color(alpha, this.red, this.green, this.blue);
     }
 
     /**
@@ -219,7 +227,7 @@ public final class Colors {
      * @return The color in RGB color space.
      */
     public int rgb() {
-        return FastColor.ARGB32.color(this.red, this.green, this.blue);
+        return ARGB.color(this.red, this.green, this.blue);
     }
 
     /**

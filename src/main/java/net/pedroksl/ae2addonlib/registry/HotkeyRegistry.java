@@ -49,7 +49,7 @@ public class HotkeyRegistry {
      */
     public HotkeyRegistry(
             String modId, Function<String, Integer> defaultHotkeyGetter, Consumer<String> clientRegister) {
-        if (REGISTRY.containsKey(modId) && FMLEnvironment.dist.isClient()) {
+        if (REGISTRY.containsKey(modId) && FMLEnvironment.getDist().isClient()) {
             LOG.error("Tried to initialize HotkeyRegistry on Client Dist with mod id {}", modId);
             throw new IllegalStateException();
         }
@@ -95,7 +95,7 @@ public class HotkeyRegistry {
             REGISTRY.get(this.modId).get(id).addFirst(hotkeyAction);
         } else {
             REGISTRY.get(this.modId).put(id, new ArrayList<>(List.of(hotkeyAction)));
-            if (FMLEnvironment.dist.isClient()) {
+            if (FMLEnvironment.getDist().isClient()) {
                 this.clientRegister.accept(id);
             }
         }

@@ -1,36 +1,31 @@
 package net.pedroksl.ae2addonlib.client.widgets;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-
-import org.jetbrains.annotations.NotNull;
-
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.Rect2i;
+import net.minecraft.client.gui.components.WidgetSprites;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.item.ItemStack;
+import net.pedroksl.ae2addonlib.client.screens.OutputDirectionScreen;
 import net.pedroksl.ae2addonlib.datagen.LibText;
 
 import appeng.api.orientation.RelativeSide;
 import appeng.core.AppEng;
 
 /**
- * Specific button type used in {@link net.pedroksl.ae2addonlib.client.screens.OutputDirectionScreen} to provide
+ * Specific button type used in {@link OutputDirectionScreen} to provide
  * Enable/Disable behavior and render the related tile entity.
  */
 public class OutputDirectionButton extends Button {
 
-    private final ResourceLocation buttonTexture = AppEng.makeId("textures/guis/states.png");
+    protected static final WidgetSprites SPRITES = new WidgetSprites(
+            AppEng.makeId("button"), AppEng.makeId("button_disabled"), AppEng.makeId("button_highlighted"));
     private ItemStack item;
 
     private RelativeSide side;
     private boolean enabled = false;
-
-    private static final Rect2i DISABLED_BBOX = new Rect2i(176, 128, 256, 256);
-    private static final Rect2i ENABLED_BBOX = new Rect2i(194, 128, 256, 256);
 
     /**
      * Constructs an output direction button with initial values.
@@ -78,31 +73,19 @@ public class OutputDirectionButton extends Button {
     }
 
     @Override
-    protected void renderWidget(@NotNull GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
-        RenderSystem.setShader(GameRenderer::getPositionShader);
-        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
-        RenderSystem.setShaderTexture(0, buttonTexture);
-        if (enabled) {
-            blit(pGuiGraphics, buttonTexture, ENABLED_BBOX);
-        } else {
-            blit(pGuiGraphics, buttonTexture, DISABLED_BBOX);
-        }
-
-        if (item != null) {
-            pGuiGraphics.renderItem(item, this.getX() + 1, this.getY() + 1);
-        }
-    }
-
-    private void blit(@NotNull GuiGraphics pGuiGraphics, ResourceLocation texture, Rect2i bbox) {
-        pGuiGraphics.blit(
-                texture,
+    protected void extractContents(
+            GuiGraphicsExtractor guiGraphicsExtractor, int pMouseX, int pMouseY, float pPartialTick) {
+        guiGraphicsExtractor.blitSprite(
+                RenderPipelines.GUI_TEXTURED,
+                SPRITES.get(enabled, this.isHovered()),
                 this.getX(),
                 this.getY(),
-                bbox.getX(),
-                bbox.getY(),
-                width,
-                height,
-                bbox.getWidth(),
-                bbox.getHeight());
+                this.getWidth(),
+                this.getHeight(),
+                ARGB.white(alpha));
+
+        if (item != null) {
+            guiGraphicsExtractor.fakeItem(item, this.getX() + 1, this.getY() + 1);
+        }
     }
 }

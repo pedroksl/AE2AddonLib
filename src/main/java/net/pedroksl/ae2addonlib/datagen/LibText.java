@@ -1,8 +1,8 @@
 package net.pedroksl.ae2addonlib.datagen;
 
-import net.pedroksl.ae2addonlib.AE2AddonLib;
+import net.pedroksl.ae2addonlib.core.AE2AddonLib;
 
-import guideme.internal.data.LocalizationEnum;
+import appeng.core.localization.LocalizationEnum;
 
 /**
  * Lib's {@link LocalizationEnum}, containing text's for the lib's screens and widgets.

@@ -7,7 +7,8 @@ import com.mojang.serialization.Codec;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.codec.ByteBufCodecs;
-import net.pedroksl.ae2addonlib.AE2AddonLib;
+import net.minecraft.world.item.component.ItemContainerContents;
+import net.pedroksl.ae2addonlib.core.AE2AddonLib;
 import net.pedroksl.ae2addonlib.registry.ComponentRegistry;
 
 /**
@@ -32,6 +33,10 @@ public class LibComponents extends ComponentRegistry {
     public static final DataComponentType<CompoundTag> NBT_TAG =
             register("generic_nbt", builder -> builder.persistent(CompoundTag.CODEC)
                     .networkSynchronized(ByteBufCodecs.COMPOUND_TAG));
+
+    public static final DataComponentType<ItemContainerContents> ITEM_INVENTORY =
+            register("item_inventory", builder -> builder.persistent(ItemContainerContents.CODEC)
+                    .networkSynchronized(ItemContainerContents.STREAM_CODEC));
 
     /**
      * An integer {@link DataComponentType} to save tint color data in an {@link net.minecraft.world.item.ItemStack}.

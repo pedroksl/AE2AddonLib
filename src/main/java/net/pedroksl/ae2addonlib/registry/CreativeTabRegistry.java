@@ -45,7 +45,7 @@ public class CreativeTabRegistry {
      * @param icon A supplier of the {@link ItemStack} to be used as the tab icon.
      */
     public CreativeTabRegistry(String modId, Component title, Supplier<ItemStack> icon) {
-        if (DRMap.containsKey(modId) && FMLEnvironment.dist.isClient()) {
+        if (DRMap.containsKey(modId) && FMLEnvironment.getDist().isClient()) {
             LOG.error("Tried to initialize CreativeTabRegistry on Client Dist with mod id {}", modId);
             throw new IllegalStateException();
         }

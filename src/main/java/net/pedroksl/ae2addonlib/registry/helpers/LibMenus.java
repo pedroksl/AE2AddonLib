@@ -3,8 +3,8 @@ package net.pedroksl.ae2addonlib.registry.helpers;
 import java.util.function.Supplier;
 
 import net.minecraft.world.inventory.MenuType;
-import net.pedroksl.ae2addonlib.AE2AddonLib;
 import net.pedroksl.ae2addonlib.api.IDirectionalOutputHost;
+import net.pedroksl.ae2addonlib.core.AE2AddonLib;
 import net.pedroksl.ae2addonlib.gui.OutputDirectionMenu;
 import net.pedroksl.ae2addonlib.gui.SetAmountMenu;
 import net.pedroksl.ae2addonlib.registry.MenuRegistry;

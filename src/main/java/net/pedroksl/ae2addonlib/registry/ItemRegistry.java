@@ -7,6 +7,7 @@ import com.mojang.logging.LogUtils;
 
 import org.slf4j.Logger;
 
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.loading.FMLEnvironment;
@@ -14,10 +15,8 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 import appeng.api.parts.IPart;
 import appeng.api.parts.IPartItem;
-import appeng.api.parts.PartModels;
 import appeng.core.definitions.ItemDefinition;
 import appeng.items.parts.PartItem;
-import appeng.items.parts.PartModelsHelper;
 
 /**
  * <p>Class responsible for the registering of items.</p>
@@ -38,7 +37,7 @@ public class ItemRegistry {
      * @param modId The MOD_ID of the mod creating this instance.
      */
     public ItemRegistry(String modId) {
-        if (DRMap.containsKey(modId) && FMLEnvironment.dist.isClient()) {
+        if (DRMap.containsKey(modId) && FMLEnvironment.getDist().isClient()) {
             LOG.error("Tried to initialize AddonItems on Client Dist with mod id {}", modId);
             throw new IllegalStateException();
         }
@@ -76,7 +75,6 @@ public class ItemRegistry {
 
     /**
      * Registers an item.
-     * @param modId The MOD_ID of the requesting mod.
      * @param englishName Human-readable string to name the block. Can be used in a language provider to generate translations alongside {@link #getItems()}.
      * @param id The id of the registered item.
      * @param factory The item construction factory.
@@ -84,16 +82,15 @@ public class ItemRegistry {
      * @return The {@link ItemDefinition} containing all relevant information for this block.
      */
     protected static <T extends Item> ItemDefinition<T> item(
-            String modId, String englishName, String id, Function<Item.Properties, T> factory) {
-        var definition = new ItemDefinition<>(englishName, getDR(modId).registerItem(id, factory));
+            String englishName, Identifier id, Function<Item.Properties, T> factory) {
+        var modId = id.getNamespace();
+        var definition = new ItemDefinition<>(englishName, getDR(modId).registerItem(id.getPath(), factory));
         ITEMS.get(modId).add(definition);
         return definition;
     }
 
     /**
-     * Registers a part item. This method also registers the part models. I will look for {@link net.minecraft.resources.ResourceLocation}s
-     * marked with {@link appeng.items.parts.PartModels} annotation.
-     * @param modId The MOD_ID of the requesting mod.
+     * Registers a part item. This method also registers the part models.
      * @param englishName Human-readable string to name the block. Can be used in a language provider to generate translations alongside {@link #getItems()}.
      * @param id The id of the registered item.
      * @param partClass The class of the registered part.
@@ -102,9 +99,8 @@ public class ItemRegistry {
      * @return The {@link ItemDefinition} containing all relevant information for this block.
      */
     protected static <T extends IPart> ItemDefinition<PartItem<T>> part(
-            String modId, String englishName, String id, Class<T> partClass, Function<IPartItem<T>, T> factory) {
-        PartModels.registerModels(PartModelsHelper.createModels(partClass));
-        return item(modId, englishName, id, p -> new PartItem<>(p, partClass, factory));
+            String englishName, Identifier id, Class<T> partClass, Function<IPartItem<T>, T> factory) {
+        return item(englishName, id, p -> new PartItem<>(p, partClass, factory));
     }
 
     /**

@@ -41,7 +41,7 @@ public class BlockEntityRegistry {
      * @param modId The MOD_ID of the mod creating this instance.
      */
     public BlockEntityRegistry(String modId) {
-        if (DRMap.containsKey(modId) && FMLEnvironment.dist.isClient()) {
+        if (DRMap.containsKey(modId) && FMLEnvironment.getDist().isClient()) {
             LOG.error("Tried to initialize AddonBlockEntities on Client Dist with mod id {}", modId);
             throw new IllegalStateException();
         }
@@ -139,17 +139,20 @@ public class BlockEntityRegistry {
         }
 
         var deferred = getDR(modId).register(id, () -> {
+            var typeHolder = new AtomicReference<BlockEntityType<T>>();
+            BlockEntityType.BlockEntitySupplier<T> supplier =
+                    (pos, state) -> factory.create(typeHolder.get(), pos, state);
+
             var blocks = Arrays.stream(blockDefs).map(BlockDefinition::block).toArray(AEBaseEntityBlock[]::new);
 
-            var typeHolder = new AtomicReference<BlockEntityType<T>>();
-            var type = BlockEntityType.Builder.of((pos, state) -> factory.create(typeHolder.get(), pos, state), blocks)
-                    .build(null);
+            var type = new BlockEntityType<>(supplier, blocks);
             typeHolder.setPlain(type);
 
             AEBaseBlockEntity.registerBlockEntityItem(type, blockDefs[0].asItem());
 
             for (var block : blocks) {
-                block.setBlockEntity(entityClass, type, null, null);
+                AEBaseEntityBlock<T> baseBlock = (AEBaseEntityBlock<T>) block;
+                baseBlock.setBlockEntity(entityClass, type, null, null);
             }
 
             return type;

@@ -1,4 +1,4 @@
-package net.pedroksl.ae2addonlib.network.serverPacket;
+package net.pedroksl.ae2addonlib.core.network.serverPacket;
 
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;

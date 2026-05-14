@@ -6,30 +6,25 @@ import org.lwjgl.glfw.GLFW;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.inventory.InventoryMenu;
 import net.neoforged.fml.ModList;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.transfer.fluid.FluidUtil;
+import net.pedroksl.ae2addonlib.core.network.serverPacket.FluidTankItemUsePacket;
 import net.pedroksl.ae2addonlib.datagen.LibText;
-import net.pedroksl.ae2addonlib.network.serverPacket.FluidTankItemUsePacket;
-import net.pedroksl.ae2addonlib.util.Colors;
 
 import appeng.api.stacks.AmountFormat;
 import appeng.api.stacks.GenericStack;
 import appeng.client.gui.AEBaseScreen;
+import appeng.client.gui.style.Blitter;
 import appeng.core.localization.Tooltips;
 
 /**
@@ -41,6 +36,7 @@ public class FluidTankSlot extends AbstractWidget {
 
     private final AbstractContainerScreen<?> screen;
     private TextureAtlasSprite fluidTexture;
+    private int fluidTint = -1;
     private FluidStack content = FluidStack.EMPTY;
     private final int maxLevel;
     private boolean disableRender = false;
@@ -68,68 +64,35 @@ public class FluidTankSlot extends AbstractWidget {
     }
 
     @Override
-    public void onClick(double mouseX, double mouseY, int button) {
+    public void onClick(@NotNull MouseButtonEvent event, boolean doubleClick) {
         var stack = screen.getMenu().getCarried();
-        if (!stack.isEmpty()) {
-            var cap = stack.getCapability(Capabilities.FluidHandler.ITEM);
-            if (cap != null) {
-                FluidStack fluidStack = cap.getFluidInTank(0);
+        if (isValidClickButton(event.button()) && !stack.isEmpty()) {
+            if (!FluidUtil.getFirstStackContained(stack).isEmpty()) {
+                FluidStack fluidStack = FluidUtil.getFirstStackContained(stack);
                 if (fluidStack.is(this.content.getFluid()) || fluidStack.isEmpty() || this.content.isEmpty()) {
                     var actualButton = screen instanceof AEBaseScreen<?> baseScreen
                             ? (baseScreen.isHandlingRightClick() ? 1 : 0)
-                            : button;
-                    PacketDistributor.sendToServer(new FluidTankItemUsePacket(this.index, actualButton));
+                            : event.button();
+                    ClientPacketDistributor.sendToServer(new FluidTankItemUsePacket(this.index, actualButton));
                 }
             }
         }
     }
 
-    @Override
-    public void playDownSound(@NotNull SoundManager handler) {}
-
-    /**
-     * Plays sounds depending on if the fluid was inserted or extracted.
-     * @param isInsert If the fluid was inserted or extracted.
-     */
-    public static void playDownSound(boolean isInsert) {
-        var handler = Minecraft.getInstance().getSoundManager();
-        if (isInsert) {
-            handler.play(SimpleSoundInstance.forUI(SoundEvents.BUCKET_EMPTY, 1.0F, 1.0F));
-        } else {
-            handler.play(SimpleSoundInstance.forUI(SoundEvents.BUCKET_FILL, 1.0F, 1.0F));
-        }
-    }
-
-    @Override
     public boolean isValidClickButton(int button) {
         return button == GLFW.GLFW_MOUSE_BUTTON_LEFT || button == GLFW.GLFW_MOUSE_BUTTON_RIGHT;
     }
 
     @Override
-    protected void renderWidget(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+    protected void extractWidgetRenderState(
+            GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
         if (content == null || fluidTexture == null || this.disableRender) return;
 
-        var color = Colors.ofArgb(
-                IClientFluidTypeExtensions.of(this.content.getFluid()).getTintColor());
-        guiGraphics.setColor(color.r(), color.g(), color.b(), color.a());
-
-        float levels = content.getAmount() / 1000f / maxLevel;
-        var usedY = (int) Math.ceil(levels * this.height);
-
-        float tiles = (float) usedY / this.width;
-
-        var currentY = this.getY() + this.height;
-        for (var x = 0; x < tiles; x++) {
-            if (tiles - x > 1) {
-                var size = this.width;
-                guiGraphics.blit(this.getX(), currentY - size, 0, size, size, this.fluidTexture);
-                currentY -= size;
-            } else {
-                var size = (int) Math.ceil((tiles - x) * this.width);
-                guiGraphics.blit(this.getX(), currentY - size, 0, this.width, size, this.fluidTexture);
-            }
-        }
-        guiGraphics.setColor(1, 1, 1, 1);
+        float fluidHeight = content.getAmount() / 1000f / maxLevel * this.height;
+        Blitter.sprite(this.fluidTexture)
+                .dest(this.getX(), (int) (this.getY() + this.height - fluidHeight), this.width, (int) fluidHeight)
+                .colorRgb(this.fluidTint)
+                .blit(guiGraphics);
     }
 
     @Override
@@ -154,11 +117,18 @@ public class FluidTankSlot extends AbstractWidget {
         updateTooltip(fluidStack);
 
         if (updateTexture && !this.content.isEmpty()) {
-            IClientFluidTypeExtensions properties = IClientFluidTypeExtensions.of(this.content.getFluid());
-            ResourceLocation texture = properties.getStillTexture(this.content);
-            this.fluidTexture = Minecraft.getInstance()
-                    .getTextureAtlas(InventoryMenu.BLOCK_ATLAS)
-                    .apply(texture);
+            var fluidModel = Minecraft.getInstance()
+                    .getModelManager()
+                    .getFluidStateModelSet()
+                    .get(this.content.getFluid().defaultFluidState());
+
+            this.fluidTexture = fluidModel.stillMaterial().sprite();
+
+            this.fluidTint = -1;
+            var tintSource = fluidModel.fluidTintSource();
+            if (tintSource != null) {
+                this.fluidTint = tintSource.colorAsStack(fluidStack);
+            }
         }
     }
 

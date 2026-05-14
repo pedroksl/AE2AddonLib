@@ -3,12 +3,21 @@ package net.pedroksl.ae2addonlib.client.widgets;
 import java.awt.*;
 import java.util.function.BiConsumer;
 
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+
+import org.joml.Matrix3x2f;
+import org.joml.Matrix3x2fc;
+import org.jspecify.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.Rect2i;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
@@ -53,7 +62,7 @@ public class SaturationValuePicker implements ICompositeWidget {
     }
 
     @Override
-    public void drawBackgroundLayer(GuiGraphics guiGraphics, Rect2i bounds, Point mouse) {
+    public void drawBackgroundLayer(GuiGraphicsExtractor guiGraphics, Rect2i bounds, Point mouse) {
         var minX = bounds.getX() + this.position.getX();
         var minY = bounds.getY() + this.position.getY();
         var w = this.width;
@@ -62,44 +71,26 @@ public class SaturationValuePicker implements ICompositeWidget {
         var lineColor = 4276052 | (255 << 24);
         guiGraphics.fill(minX - 1, minY - 1, minX + w + 1, minY + h + 1, lineColor);
 
-        renderGradient(
-                guiGraphics,
+        guiGraphics.submitGuiElementRenderState(new MultiGradientRectangleRenderState(
+                RenderPipelines.GUI,
+                TextureSetup.noTexture(),
+                new Matrix3x2f(guiGraphics.pose()),
                 minX,
                 minY,
-                w,
-                h,
+                minX + w,
+                minY + h,
                 Colors.ofHsv(hue, 0f, 1f).argb(),
                 Colors.ofHsv(hue, 1f, 1f).argb(),
                 Colors.ofHsv(hue, 0f, 0f).argb(),
-                Colors.ofHsv(hue, 1f, 0f).argb());
+                Colors.ofHsv(hue, 1f, 0f).argb(),
+                guiGraphics.peekScissorStack()));
 
         int hsvX = minX + (int) (this.saturation * (this.width - 1));
         int hsvY = minY + (int) ((1f - this.value) * (this.height - 1));
-        guiGraphics.hLine(hsvX - 1, hsvX + 1, hsvY - 1, Color.WHITE.getRGB());
-        guiGraphics.hLine(hsvX - 1, hsvX + 1, hsvY + 1, Color.WHITE.getRGB());
-        guiGraphics.vLine(hsvX - 1, hsvY - 1, hsvY + 1, Color.WHITE.getRGB());
-        guiGraphics.vLine(hsvX + 1, hsvY - 1, hsvY + 1, Color.WHITE.getRGB());
-    }
-
-    private void renderGradient(
-            GuiGraphics guiGraphics,
-            int x,
-            int y,
-            int width,
-            int height,
-            int tlColor,
-            int trColor,
-            int blColor,
-            int brColor) {
-        RenderType type = RenderType.gui();
-
-        var buffer = guiGraphics.bufferSource().getBuffer(type);
-        var matrix = guiGraphics.pose().last().pose();
-
-        buffer.addVertex(matrix, x + width, y, 0).setColor(trColor);
-        buffer.addVertex(matrix, x, y, 0).setColor(tlColor);
-        buffer.addVertex(matrix, x, y + height, 0).setColor(blColor);
-        buffer.addVertex(matrix, x + width, y + height, 0).setColor(brColor);
+        guiGraphics.horizontalLine(hsvX - 1, hsvX + 1, hsvY - 1, Color.WHITE.getRGB());
+        guiGraphics.horizontalLine(hsvX - 1, hsvX + 1, hsvY + 1, Color.WHITE.getRGB());
+        guiGraphics.verticalLine(hsvX - 1, hsvY - 1, hsvY + 1, Color.WHITE.getRGB());
+        guiGraphics.verticalLine(hsvX + 1, hsvY - 1, hsvY + 1, Color.WHITE.getRGB());
     }
 
     @Override
@@ -194,5 +185,72 @@ public class SaturationValuePicker implements ICompositeWidget {
     @Override
     public Rect2i getBounds() {
         return new Rect2i(this.position.getX(), this.position.getY(), this.width, this.height);
+    }
+
+    private record MultiGradientRectangleRenderState(
+            RenderPipeline pipeline,
+            TextureSetup textureSetup,
+            Matrix3x2fc pose,
+            int x0,
+            int y0,
+            int x1,
+            int y1,
+            int tlColor,
+            int trColor,
+            int blColor,
+            int brColor,
+            @Nullable ScreenRectangle scissorArea,
+            @Nullable ScreenRectangle bounds)
+            implements GuiElementRenderState {
+        public MultiGradientRectangleRenderState(
+                RenderPipeline pipeline,
+                TextureSetup textureSetup,
+                Matrix3x2fc pose,
+                int x0,
+                int y0,
+                int x1,
+                int y1,
+                int tlColor,
+                int trColor,
+                int blColor,
+                int brColor,
+                @Nullable ScreenRectangle scissorArea) {
+            this(
+                    pipeline,
+                    textureSetup,
+                    pose,
+                    x0,
+                    y0,
+                    x1,
+                    y1,
+                    tlColor,
+                    trColor,
+                    blColor,
+                    brColor,
+                    scissorArea,
+                    getBounds(x0, y0, x1, y1, pose, scissorArea));
+        }
+
+        @Override
+        public void buildVertices(VertexConsumer vertexConsumer) {
+            vertexConsumer
+                    .addVertexWith2DPose(this.pose(), (float) x1, (float) y0)
+                    .setColor(trColor);
+            vertexConsumer
+                    .addVertexWith2DPose(this.pose(), (float) x0, (float) y0)
+                    .setColor(tlColor);
+            vertexConsumer
+                    .addVertexWith2DPose(this.pose(), (float) x0, (float) y1)
+                    .setColor(blColor);
+            vertexConsumer
+                    .addVertexWith2DPose(this.pose(), (float) x1, (float) y1)
+                    .setColor(brColor);
+        }
+
+        private static @Nullable ScreenRectangle getBounds(
+                int x0, int y0, int x1, int y1, Matrix3x2fc pose, @Nullable ScreenRectangle scissorArea) {
+            ScreenRectangle bounds = (new ScreenRectangle(x0, y0, x1 - x0, y1 - y0)).transformMaxBounds(pose);
+            return scissorArea != null ? scissorArea.intersection(bounds) : bounds;
+        }
     }
 }

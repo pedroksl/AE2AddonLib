@@ -1,8 +1,8 @@
 package net.pedroksl.ae2addonlib.client.widgets;
 
 import net.minecraft.client.renderer.Rect2i;
-import net.minecraft.resources.ResourceLocation;
-import net.pedroksl.ae2addonlib.AE2AddonLib;
+import net.minecraft.resources.Identifier;
+import net.pedroksl.ae2addonlib.core.AE2AddonLib;
 
 /**
  * The lib's icons. Used in the libs screens.
@@ -23,7 +23,7 @@ public enum LibIcons implements IBlitterIcon {
     private final int width;
     private final int height;
 
-    private static final ResourceLocation TEXTURE = AE2AddonLib.makeId("textures/guis/states.png");
+    private static final Identifier TEXTURE = AE2AddonLib.makeId("textures/guis/states.png");
     private static final int TEXTURE_WIDTH = 256;
     private static final int TEXTURE_HEIGHT = 256;
 
@@ -39,7 +39,7 @@ public enum LibIcons implements IBlitterIcon {
     }
 
     @Override
-    public ResourceLocation getTexture() {
+    public Identifier getTexture() {
         return TEXTURE;
     }
 

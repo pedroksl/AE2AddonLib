@@ -1,6 +1,7 @@
 package net.pedroksl.ae2addonlib.registry;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import com.mojang.logging.LogUtils;
@@ -9,14 +10,12 @@ import org.slf4j.Logger;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.BucketItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.LiquidBlock;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.loading.FMLEnvironment;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
@@ -46,7 +45,7 @@ public class FluidRegistry {
      * @param modId The MOD_ID of the mod creating this instance.
      */
     public FluidRegistry(String modId) {
-        if (DR_FLUID_TYPES.containsKey(modId) && FMLEnvironment.dist.isClient()) {
+        if (DR_FLUID_TYPES.containsKey(modId) && FMLEnvironment.getDist().isClient()) {
             LOG.error("Tried to initialize FluidRegistry on Client Dist with mod id {}", modId);
             throw new IllegalStateException();
         }
@@ -101,20 +100,17 @@ public class FluidRegistry {
             Supplier<FluidType> fluidTypeSupplier,
             Supplier<F> flowingSupplier,
             Supplier<F> sourceSupplier,
-            Supplier<B> liquidBlockSupplier) {
+            Function<BlockBehaviour.Properties, B> liquidBlockSupplier) {
         var type = DR_FLUID_TYPES.get(modId).register(id + "_type", fluidTypeSupplier);
         var flowing = DR_FLUIDS.get(modId).register(id + "_flowing", flowingSupplier);
         var source = DR_FLUIDS.get(modId).register(id + "_source", sourceSupplier);
-        var block = DR_FLUID_BLOCKS.get(modId).register(id + "_block", liquidBlockSupplier);
+        var block = DR_FLUID_BLOCKS.get(modId).registerBlock(id + "_block", liquidBlockSupplier);
         var bucketItem = DR_BUCKET_ITEMS
                 .get(modId)
-                .register(
+                .registerItem(
                         id + "_bucket",
-                        () -> new BucketItem(
-                                source.get(),
-                                new Item.Properties()
-                                        .craftRemainder(Items.BUCKET)
-                                        .stacksTo(1)));
+                        p -> new BucketItem(
+                                source.get(), p.craftRemainder(Items.BUCKET).stacksTo(1)));
 
         var bucketDefinition = new ItemDefinition<>(englishName + " Bucket", bucketItem);
         var definition = new FluidDefinition<>(englishName, type, flowing, source, block, bucketDefinition);
@@ -129,22 +125,9 @@ public class FluidRegistry {
      * @param eventBus The bus received as a parameter in the mod's main constructor.
      */
     public void register(IEventBus eventBus) {
+        DR_BUCKET_ITEMS.get(this.modId).register(eventBus);
         DR_FLUID_TYPES.get(this.modId).register(eventBus);
         DR_FLUIDS.get(this.modId).register(eventBus);
         DR_FLUID_BLOCKS.get(this.modId).register(eventBus);
-        DR_BUCKET_ITEMS.get(this.modId).register(eventBus);
-    }
-
-    /**
-     * Helper method that can be used to register bucket coloring
-     * @param stack The bucket item stack.
-     * @param index The layer index.
-     * @return The color as an int.
-     */
-    public static int getFluidColor(ItemStack stack, int index) {
-        if (index == 1 && stack.getItem() instanceof BucketItem bucketItem) {
-            return IClientFluidTypeExtensions.of(bucketItem.content).getTintColor();
-        }
-        return 0xFFFFFFFF;
     }
 }

@@ -1,42 +1,79 @@
 package net.pedroksl.ae2addonlib.datagen;
 
-import net.minecraft.data.PackOutput;
-import net.minecraft.data.models.blockstates.PropertyDispatch;
-import net.minecraft.data.models.blockstates.Variant;
-import net.minecraft.data.models.blockstates.VariantProperties;
-import net.minecraft.resources.ResourceLocation;
+import static net.minecraft.client.data.models.BlockModelGenerators.*;
+
+import java.util.Optional;
+
+import net.minecraft.client.color.item.Constant;
+import net.minecraft.client.data.models.BlockModelGenerators;
+import net.minecraft.client.data.models.ItemModelGenerators;
+import net.minecraft.client.data.models.blockstates.MultiVariantGenerator;
+import net.minecraft.client.data.models.blockstates.PropertyDispatch;
+import net.minecraft.client.data.models.model.*;
+import net.minecraft.client.resources.model.sprite.Material;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.WallBlock;
-import net.neoforged.neoforge.client.model.generators.BlockModelBuilder;
-import net.neoforged.neoforge.client.model.generators.ModelFile;
-import net.neoforged.neoforge.client.model.generators.ModelProvider;
-import net.neoforged.neoforge.client.model.generators.loaders.DynamicFluidContainerModelBuilder;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
-import net.neoforged.neoforge.internal.versions.neoforge.NeoForgeVersion;
-import net.pedroksl.ae2addonlib.AE2AddonLib;
+import net.neoforged.neoforge.client.model.item.DynamicFluidContainerModel;
+import net.pedroksl.ae2addonlib.core.AE2AddonLib;
 import net.pedroksl.ae2addonlib.registry.helpers.FluidDefinition;
 
 import appeng.api.orientation.BlockOrientation;
+import appeng.api.util.AEColor;
+import appeng.api.util.AEColorVariant;
 import appeng.block.crafting.PatternProviderBlock;
+import appeng.client.render.AEColorItemTintSource;
 import appeng.core.AppEng;
 import appeng.core.definitions.BlockDefinition;
 import appeng.core.definitions.ItemDefinition;
-import appeng.datagen.providers.models.AE2BlockStateProvider;
+import appeng.datagen.providers.models.ModelSubProvider;
+import appeng.datagen.providers.models.PartModelOutput;
+import appeng.items.parts.ColoredPartItem;
+import appeng.items.parts.PartItem;
 
 /**
  * Utility class that provides methods to help in generating json models.
  */
-public abstract class AE2AddonModelProvider extends AE2BlockStateProvider {
+public abstract class AE2AddonModelProvider extends ModelSubProvider {
+
+    public static final TextureSlot SIDES = TextureSlot.create("sides", TextureSlot.ALL);
+    public static final ModelTemplate BUS_TEMPLATE = new ModelTemplate(
+            Optional.of(AppEng.makeId("part/export_bus_base")),
+            Optional.empty(),
+            TextureSlot.BACK,
+            TextureSlot.FRONT,
+            TextureSlot.PARTICLE,
+            SIDES);
+
+    public static final ModelTemplate BUS_ITEM_TEMPLATE = new ModelTemplate(
+            Optional.of(AppEng.makeId("item/export_bus")), Optional.empty(), SIDES, TextureSlot.FRONT);
+
+    public static final ModelTemplate PP_TEMPLATE = new ModelTemplate(
+            Optional.of(AppEng.makeId("part/pattern_provider_base")),
+            Optional.empty(),
+            TextureSlot.BACK,
+            TextureSlot.FRONT,
+            TextureSlot.PARTICLE,
+            SIDES);
+
+    public static final ModelTemplate PP_ITEM_TEMPLATE = new ModelTemplate(
+            Optional.of(AppEng.makeId("item/cable_interface")),
+            Optional.empty(),
+            SIDES,
+            TextureSlot.FRONT,
+            TextureSlot.BACK,
+            TextureSlot.PARTICLE);
 
     /**
      * Constructs the provider's instance.
-     * @param packOutput The mod's pack output.
-     * @param modId The MOD_ID of the child mod.
-     * @param exFileHelper The mod's file helper.
+     * @param blockModels The Block Model Generators.
+     * @param itemModels The Item Model Generators.
+     * @param partModels The Part Model Output.
      */
-    public AE2AddonModelProvider(PackOutput packOutput, String modId, ExistingFileHelper exFileHelper) {
-        super(packOutput, modId, exFileHelper);
+    public AE2AddonModelProvider(
+            BlockModelGenerators blockModels, ItemModelGenerators itemModels, PartModelOutput partModels) {
+        super(blockModels, itemModels, partModels);
     }
 
     /**
@@ -44,23 +81,19 @@ public abstract class AE2AddonModelProvider extends AE2BlockStateProvider {
      * @param item The item's definition.
      */
     protected void basicItem(ItemDefinition<?> item) {
-        basicItem(item, null);
+        basicItem(item, "item/" + item.id().getPath());
     }
 
     /**
      * Constructs a model for a simple, optionally referencing a different texture path.
      * @param item The item's definition.
-     * @param texturePath The path of the textures for the item.
+     * @param texture The path of the textures for the item.
      */
-    protected void basicItem(ItemDefinition<?> item, String texturePath) {
-        if (texturePath == null) itemModels().basicItem(item.asItem());
-        else {
-            String namespace = item.id().getNamespace();
-            String id = item.id().getPath();
-            ResourceLocation texture =
-                    ResourceLocation.fromNamespaceAndPath(namespace, "item/" + texturePath + "/" + id);
-            itemModels().singleTexture(id, mcLoc("item/generated"), "layer0", texture);
-        }
+    protected void basicItem(ItemDefinition<?> item, String texture) {
+        var textureId = Identifier.fromNamespaceAndPath(item.id().getNamespace(), texture);
+        var model = ModelTemplates.FLAT_ITEM.create(
+                item.asItem(), TextureMapping.layer0(new Material(textureId)), itemModels.modelOutput);
+        itemModels.itemModelOutput.accept(item.asItem(), ItemModelUtils.plainModel(model));
     }
 
     /**
@@ -68,14 +101,17 @@ public abstract class AE2AddonModelProvider extends AE2BlockStateProvider {
      * ending in "_base". The colored layer will look for a texture ending in "_tint".
      * @param item The item's definition.
      */
-    protected void coloredItem(ItemDefinition<?> item) {
+    protected void twoLayeredItem(ItemDefinition<?> item) {
         String namespace = item.id().getNamespace();
         String id = item.id().getPath();
-        ResourceLocation baseTexture = ResourceLocation.fromNamespaceAndPath(namespace, "item/" + id + "_base");
-        ResourceLocation tintTexture = ResourceLocation.fromNamespaceAndPath(namespace, "item/" + id + "_tint");
-        itemModels()
-                .singleTexture(id, mcLoc("item/generated"), "layer0", baseTexture)
-                .texture("layer1", tintTexture);
+        Identifier baseTexture = Identifier.fromNamespaceAndPath(namespace, "item/" + id + "_base");
+        Identifier tintTexture = Identifier.fromNamespaceAndPath(namespace, "item/" + id + "_tint");
+
+        var model = ModelTemplates.TWO_LAYERED_ITEM.create(
+                item.asItem(),
+                TextureMapping.layered(new Material(baseTexture), new Material(tintTexture)),
+                itemModels.modelOutput);
+        itemModels.itemModelOutput.accept(item.asItem(), ItemModelUtils.tintedModel(model));
     }
 
     /**
@@ -105,22 +141,47 @@ public abstract class AE2AddonModelProvider extends AE2BlockStateProvider {
         var namespace = part.id().getNamespace();
         var id = part.id().getPath();
         var partName = id.substring(0, id.lastIndexOf('_'));
-        var front = ResourceLocation.fromNamespaceAndPath(namespace, "part/" + partName);
-        var back = ResourceLocation.fromNamespaceAndPath(namespace, "part/" + partName + "_back");
-        var sides = ResourceLocation.fromNamespaceAndPath(namespace, "part/" + partName + "_sides");
+        var front = new Material(Identifier.fromNamespaceAndPath(namespace, "part/" + partName));
+        var back = new Material(Identifier.fromNamespaceAndPath(namespace, "part/" + partName + "_back"));
+        var sides = new Material(Identifier.fromNamespaceAndPath(namespace, "part/" + partName + "_sides"));
 
-        var base = isBus ? AppEng.makeId("part/export_bus_base") : AppEng.makeId("part/pattern_provider_base");
-        var itemBase = isBus ? AppEng.makeId("item/export_bus") : AppEng.makeId("item/cable_pattern_provider");
+        var mapping = new TextureMapping()
+                .put(TextureSlot.BACK, back)
+                .put(TextureSlot.FRONT, front)
+                .put(TextureSlot.PARTICLE, back)
+                .put(SIDES, sides);
 
-        models().singleTexture("part/" + id, base, "sidesStatus", AppEng.makeId("part/monitor_sides_status"))
-                .texture("sides", sides)
-                .texture("front", front)
-                .texture("back", back)
-                .texture("particle", back);
-        itemModels()
-                .singleTexture("item/" + id, itemBase, "sides", sides)
-                .texture("front", front)
-                .texture("back", back);
+        Identifier partId = Identifier.fromNamespaceAndPath(namespace, "part/" + id);
+        Identifier itemId = Identifier.fromNamespaceAndPath(namespace, "item/" + id);
+        Identifier model;
+        Identifier itemModel;
+        if (isBus) {
+            model = BUS_TEMPLATE.create(partId, mapping, modelOutput);
+            itemModel = BUS_ITEM_TEMPLATE.create(itemId, mapping, modelOutput);
+        } else {
+            model = PP_TEMPLATE.create(partId, mapping, modelOutput);
+            itemModel = PP_ITEM_TEMPLATE.create(itemId, mapping, modelOutput);
+        }
+        partModels.staticModel(part, model);
+
+        if (!(part.asItem() instanceof PartItem<?> item)) {
+            return;
+        }
+
+        var color = AEColor.TRANSPARENT;
+        if (item instanceof ColoredPartItem<?> coloredPartItem) {
+            color = coloredPartItem.getColor();
+        }
+
+        itemModels.itemModelOutput.accept(
+                item.asItem(),
+                ItemModelUtils.tintedModel(
+                        itemModel,
+                        new Constant(-1),
+                        new AEColorItemTintSource(color, AEColorVariant.DARK),
+                        new AEColorItemTintSource(color, AEColorVariant.MEDIUM),
+                        new AEColorItemTintSource(color, AEColorVariant.BRIGHT),
+                        new AEColorItemTintSource(color, AEColorVariant.MEDIUM_BRIGHT)));
     }
 
     /**
@@ -128,78 +189,110 @@ public abstract class AE2AddonModelProvider extends AE2BlockStateProvider {
      * @param block The pattern provider's definition.
      */
     protected void patternProvider(BlockDefinition<?> block) {
-        var patternProviderNormal = cubeAll(block.block());
-        simpleBlockItem(block.block(), patternProviderNormal);
+        var normalModel = TexturedModel.CUBE.create(block.block(), modelOutput);
 
         var namespace = block.id().getNamespace();
         var blockName = block.id().getPath();
-        var patternProviderOriented = models().cubeBottomTop(
-                        "block/" + blockName + "_oriented",
-                        ResourceLocation.fromNamespaceAndPath(namespace, "block/" + blockName + "_alt"),
-                        ResourceLocation.fromNamespaceAndPath(namespace, "block/" + blockName + "_back"),
-                        ResourceLocation.fromNamespaceAndPath(namespace, "block/" + blockName + "_front"));
-        multiVariantGenerator(block, Variant.variant())
-                .with(PropertyDispatch.property(PatternProviderBlock.PUSH_DIRECTION)
+
+        var orientedModel = TexturedModel.CUBE_TOP_BOTTOM
+                .updateTexture(textures -> textures.put(
+                                TextureSlot.SIDE,
+                                new Material(Identifier.fromNamespaceAndPath(namespace, "block/" + blockName + "_alt")))
+                        .put(
+                                TextureSlot.BOTTOM,
+                                new Material(
+                                        Identifier.fromNamespaceAndPath(namespace, "block/" + blockName + "_back")))
+                        .put(
+                                TextureSlot.TOP,
+                                new Material(
+                                        Identifier.fromNamespaceAndPath(namespace, "block/" + blockName + "_back"))))
+                .createWithSuffix(block.block(), "_oriented", modelOutput);
+
+        blockStateOutput.accept(MultiVariantGenerator.dispatch(block.block())
+                .with(PropertyDispatch.initial(PatternProviderBlock.PUSH_DIRECTION)
                         .generate((dir) -> {
                             var forward = dir.getDirection();
                             if (forward == null) {
-                                return Variant.variant()
-                                        .with(VariantProperties.MODEL, patternProviderNormal.getLocation());
+                                return plainVariant(normalModel);
                             } else {
                                 var orientation = BlockOrientation.get(forward);
-                                return applyRotation(
-                                        Variant.variant()
-                                                .with(VariantProperties.MODEL, patternProviderOriented.getLocation()),
-                                        // + 90 because the default model is oriented UP, while block orientation
-                                        // assumes NORTH
-                                        orientation.getAngleX() + 90,
-                                        orientation.getAngleY(),
-                                        0);
+                                return plainVariant(orientedModel)
+                                        .with(applyRotation(
+                                                // + 90 because the default model is oriented UP, while block
+                                                // orientation assumes NORTH
+                                                orientation.getAngleX() + 90, orientation.getAngleY()));
                             }
-                        }));
+                        })));
     }
 
-    @Override
+    protected void stairsBlock(BlockDefinition<? extends StairBlock> stairs, BlockDefinition<?> templateBlock) {
+        var blockTexture = getBlockTexture(templateBlock);
+        stairsBlock(stairs, blockTexture, blockTexture, blockTexture);
+    }
+
     protected void stairsBlock(
-            BlockDefinition<StairBlock> stairs, String bottomTexture, String sideTexture, String topTexture) {
-        String namespace = stairs.id().getNamespace();
-        String baseName = stairs.id().getPath();
-        ResourceLocation side = ResourceLocation.fromNamespaceAndPath(namespace, sideTexture);
-        ResourceLocation bottom = ResourceLocation.fromNamespaceAndPath(namespace, bottomTexture);
-        ResourceLocation top = ResourceLocation.fromNamespaceAndPath(namespace, topTexture);
-        ModelFile stairsModel = this.models().stairs(baseName, side, bottom, top);
-        ModelFile stairsInner = this.models().stairsInner(baseName + "_inner", side, bottom, top);
-        ModelFile stairsOuter = this.models().stairsOuter(baseName + "_outer", side, bottom, top);
-        this.stairsBlock(stairs.block(), stairsModel, stairsInner, stairsOuter);
-        this.simpleBlockItem(stairs.block(), stairsModel);
+            BlockDefinition<? extends StairBlock> stairs,
+            Material bottomTexture,
+            Material sideTexture,
+            Material topTexture) {
+        var block = stairs.block();
+
+        var textures = new TextureMapping()
+                .put(TextureSlot.TOP, topTexture)
+                .put(TextureSlot.BOTTOM, bottomTexture)
+                .put(TextureSlot.SIDE, sideTexture);
+
+        var straightModel = ModelTemplates.STAIRS_STRAIGHT.create(block, textures, modelOutput);
+        var innerModel = ModelTemplates.STAIRS_INNER.create(block, textures, modelOutput);
+        var outerModel = ModelTemplates.STAIRS_OUTER.create(block, textures, modelOutput);
+
+        blockModels.blockStateOutput.accept(
+                createStairs(block, plainVariant(innerModel), plainVariant(straightModel), plainVariant(outerModel)));
+        blockModels.registerSimpleItemModel(block, straightModel);
     }
 
-    @Override
-    protected void slabBlock(
-            BlockDefinition<SlabBlock> slab,
-            BlockDefinition<?> base,
-            String bottomTexture,
-            String sideTexture,
-            String topTexture) {
-        String namespace = slab.id().getNamespace();
-        ResourceLocation side = ResourceLocation.fromNamespaceAndPath(namespace, sideTexture);
-        ResourceLocation bottom = ResourceLocation.fromNamespaceAndPath(namespace, bottomTexture);
-        ResourceLocation top = ResourceLocation.fromNamespaceAndPath(namespace, topTexture);
-        BlockModelBuilder bottomModel = this.models().slab(slab.id().getPath(), side, bottom, top);
-        this.simpleBlockItem(slab.block(), bottomModel);
-        this.slabBlock(
-                slab.block(),
-                bottomModel,
-                this.models().slabTop(slab.id().getPath() + "_top", side, bottom, top),
-                this.models().getExistingFile(base.id()));
+    protected void slabBlock(BlockDefinition<? extends SlabBlock> slab, BlockDefinition<?> baseBlock) {
+        var texture = getBlockTexture(baseBlock);
+        slabBlock(slab, baseBlock, texture, texture, texture);
     }
 
-    @Override
-    protected void wall(BlockDefinition<WallBlock> block, String texture) {
-        String namespace = block.id().getNamespace();
-        ResourceLocation textureRL = ResourceLocation.fromNamespaceAndPath(namespace, texture);
-        wallBlock(block.block(), textureRL);
-        itemModels().wallInventory(block.id().getPath(), textureRL);
+    private void slabBlock(
+            BlockDefinition<? extends SlabBlock> slab,
+            BlockDefinition<?> doubleModelDonor,
+            Material topTexture,
+            Material sideTexture,
+            Material bottomTexture) {
+        var block = slab.block();
+
+        var textures = new TextureMapping()
+                .put(TextureSlot.TOP, topTexture)
+                .put(TextureSlot.BOTTOM, bottomTexture)
+                .put(TextureSlot.SIDE, sideTexture);
+
+        var topModel = plainVariant(ModelTemplates.SLAB_TOP.create(block, textures, modelOutput));
+        var bottomModel = ModelTemplates.SLAB_BOTTOM.create(block, textures, modelOutput);
+
+        blockModels.blockStateOutput.accept(createSlab(
+                block,
+                plainVariant(bottomModel),
+                topModel,
+                plainVariant(ModelLocationUtils.getModelLocation(doubleModelDonor.block()))));
+        blockModels.registerSimpleItemModel(block, bottomModel);
+    }
+
+    protected void wall(BlockDefinition<? extends WallBlock> wall, Material texture) {
+        var block = wall.block();
+
+        var textures = new TextureMapping().put(TextureSlot.WALL, texture);
+
+        var lowSideModel = plainVariant(ModelTemplates.WALL_LOW_SIDE.create(block, textures, modelOutput));
+        var postModel = plainVariant(ModelTemplates.WALL_POST.create(block, textures, modelOutput));
+        var tallSideModel = plainVariant(ModelTemplates.WALL_TALL_SIDE.create(block, textures, modelOutput));
+
+        blockModels.blockStateOutput.accept(createWall(block, postModel, lowSideModel, tallSideModel));
+
+        var invModel = ModelTemplates.WALL_INVENTORY.create(block, textures, modelOutput);
+        blockModels.registerSimpleItemModel(block, invModel);
     }
 
     /**
@@ -216,10 +309,12 @@ public abstract class AE2AddonModelProvider extends AE2BlockStateProvider {
      * @param fluid The fluid's definition.
      */
     protected void waterBasedFluidBlocks(FluidDefinition<?, ?> fluid) {
-        simpleBlock(
+        blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(
                 fluid.block(),
-                models().getBuilder(fluid.blockHolder().getId().getPath())
-                        .texture("particle", AE2AddonLib.makeId(ModelProvider.BLOCK_FOLDER + "/" + "water_still")));
+                plainVariant(ModelTemplates.PARTICLE_ONLY.create(
+                        fluid.block(),
+                        TextureMapping.particle(new Material(AE2AddonLib.makeId("block/water_still"))),
+                        this.modelOutput))));
     }
 
     /**
@@ -227,16 +322,18 @@ public abstract class AE2AddonModelProvider extends AE2BlockStateProvider {
      * @param fluid The fluid's definition.
      */
     protected void bucket(FluidDefinition<?, ?> fluid) {
-        itemModels()
-                .withExistingParent(
-                        fluid.bucketItemId().id().getPath(),
-                        ResourceLocation.fromNamespaceAndPath(NeoForgeVersion.MOD_ID, "item/bucket"))
-                .customLoader(DynamicFluidContainerModelBuilder::begin)
-                .fluid(fluid.bucketItem().content);
-    }
-
-    @Override
-    public String getName() {
-        return "Block States / Models";
+        itemModels.itemModelOutput.accept(
+                fluid.bucketItem(),
+                new DynamicFluidContainerModel.Unbaked(
+                        new DynamicFluidContainerModel.Textures(
+                                Optional.of(new Material(Identifier.withDefaultNamespace("item/bucket"))),
+                                Optional.of(new Material(Identifier.withDefaultNamespace("item/bucket"))),
+                                Optional.of(new Material(
+                                        Identifier.fromNamespaceAndPath("neoforge", "item/mask/bucket_fluid"))),
+                                Optional.empty()),
+                        fluid.source(),
+                        false,
+                        true,
+                        false));
     }
 }

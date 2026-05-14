@@ -75,8 +75,11 @@ public class ToolbarActionButton extends AddonIconButton {
      */
     private ButtonAppearance getLibAppearance(IActionEnum action) {
         return switch (action) {
-            case AddonActionItems.DIRECTIONAL_OUTPUT -> createApp(
-                    LibIcons.DIRECTION_OUTPUT, LibText.DirectionalOutput.text(), LibText.DirectionalOutputHint.text());
+            case AddonActionItems.DIRECTIONAL_OUTPUT ->
+                createApp(
+                        LibIcons.DIRECTION_OUTPUT,
+                        LibText.DirectionalOutput.text(),
+                        LibText.DirectionalOutputHint.text());
             default -> null;
         };
     }

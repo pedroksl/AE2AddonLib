@@ -9,7 +9,7 @@ import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;
 
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.inventory.MenuType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.loading.FMLEnvironment;
@@ -23,7 +23,7 @@ import appeng.menu.implementations.MenuTypeBuilder;
  * Statically holds all instantiating mod's deferred registers and provides simple to use methods for interacting with them.
  * The recommended way to use this class is to extend it with a static registry class. Additionally, you can create
  * helper methods that remove the need to send the MOD_ID to all static methods.
- * You will still need to link the Screens to these menus in a client event using {@link appeng.init.client.InitScreens}.
+ * You will still need to link the Screens to these menus in a client event using {@link appeng.client.InitScreens}.
  */
 public abstract class MenuRegistry {
     private static final Logger LOG = LogUtils.getLogger();
@@ -37,7 +37,7 @@ public abstract class MenuRegistry {
      * @param modId The MOD_ID of the mod creating this instance.
      */
     public MenuRegistry(String modId) {
-        if (DRMap.containsKey(modId) && FMLEnvironment.dist.isClient()) {
+        if (DRMap.containsKey(modId) && FMLEnvironment.getDist().isClient()) {
             LOG.error("Tried to initialize MenuRegistry on Client Dist with mod id {}", modId);
             throw new IllegalStateException();
         }
@@ -68,7 +68,7 @@ public abstract class MenuRegistry {
     protected static <M extends AEBaseMenu, H> Supplier<MenuType<M>> create(
             String modId, String id, MenuTypeBuilder.MenuFactory<M, H> factory, Class<H> host) {
         return getDR(modId).register(id, () -> MenuTypeBuilder.create(factory, host)
-                .build(ResourceLocation.fromNamespaceAndPath(modId, id)));
+                .build(Identifier.fromNamespaceAndPath(modId, id)));
     }
 
     /**

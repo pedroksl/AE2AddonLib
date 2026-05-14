@@ -1,6 +1,6 @@
 package net.pedroksl.ae2addonlib.registry.helpers;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LiquidBlock;
@@ -33,7 +33,7 @@ public record FluidDefinition<F extends Fluid, B extends LiquidBlock>(
      * Getter function.
      * @return The resource location of the source fluid.
      */
-    public ResourceLocation id() {
+    public Identifier id() {
         return this.sourceHolder.getId();
     }
 

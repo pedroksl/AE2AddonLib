@@ -37,7 +37,7 @@ public class ComponentRegistry {
      * @param modId The MOD_ID of the mod creating this instance.
      */
     public ComponentRegistry(String modId) {
-        if (DRMap.containsKey(modId) && FMLEnvironment.dist.isClient()) {
+        if (DRMap.containsKey(modId) && FMLEnvironment.getDist().isClient()) {
             LOG.error("Tried to initialize ComponentRegistry on Client Dist with mod id {}", modId);
             throw new IllegalStateException();
         }

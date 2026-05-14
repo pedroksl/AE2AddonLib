@@ -80,7 +80,7 @@ public class OutputDirectionScreen extends AEBaseScreen<OutputDirectionMenu> {
     }
 
     /**
-     * Packet handler for the {@link net.pedroksl.ae2addonlib.network.clientPacket.OutputDirectionUpdatePacket}.
+     * Packet handler for the {@link net.pedroksl.ae2addonlib.core.network.clientPacket.OutputDirectionUpdatePacket}.
      * Updates all buttons according to server state.
      * @param sides A set of enabled sides.
      */

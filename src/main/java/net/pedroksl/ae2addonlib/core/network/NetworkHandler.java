@@ -1,4 +1,4 @@
-package net.pedroksl.ae2addonlib.network;
+package net.pedroksl.ae2addonlib.core.network;
 
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -39,7 +39,7 @@ public abstract class NetworkHandler {
 
     /**
      * Entry point for addon packet registration. Override this and call the register methods inside.
-     * Usage examle: {@link LibNetworkHandler#onRegister(PayloadRegistrar)}.
+     * Usage example: {@link LibNetworkHandler#onRegister(PayloadRegistrar)}.
      * @param registrar The mod's registrar. It's needed for the register methods.
      */
     public abstract void onRegister(PayloadRegistrar registrar);
@@ -55,7 +55,7 @@ public abstract class NetworkHandler {
             PayloadRegistrar registrar,
             CustomPacketPayload.Type<T> type,
             StreamCodec<RegistryFriendlyByteBuf, T> codec) {
-        registrar.playToClient(type, codec, ClientboundPacket::handleOnClient);
+        registrar.playToClient(type, codec);
     }
 
     /**
@@ -83,12 +83,6 @@ public abstract class NetworkHandler {
             PayloadRegistrar registrar,
             CustomPacketPayload.Type<T> type,
             StreamCodec<RegistryFriendlyByteBuf, T> codec) {
-        registrar.playBidirectional(type, codec, (payload, context) -> {
-            if (context.flow().isClientbound()) {
-                payload.handleOnClient(context);
-            } else if (context.flow().isServerbound()) {
-                payload.handleOnServer(context);
-            }
-        });
+        registrar.playBidirectional(type, codec, ServerboundPacket::handleOnServer);
     }
 }

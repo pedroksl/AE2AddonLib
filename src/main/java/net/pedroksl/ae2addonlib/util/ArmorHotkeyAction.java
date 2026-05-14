@@ -2,6 +2,7 @@ package net.pedroksl.ae2addonlib.util;
 
 import java.util.function.Predicate;
 
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -29,15 +30,12 @@ public record ArmorHotkeyAction(Predicate<ItemStack> locatable, Opener opener) i
 
     @Override
     public boolean run(Player player) {
-        var items = player.getArmorSlots();
-        int i = 0;
-        for (var item : items) {
-            if (this.locatable.test(item)) {
-                if (opener.open(player, MenuLocators.forInventorySlot(Inventory.INVENTORY_SIZE + i))) {
+        for (var slot : EquipmentSlot.values()) {
+            if (this.locatable.test(player.getItemBySlot(slot))) {
+                if (opener.open(player, MenuLocators.forInventorySlot(slot.getIndex(Inventory.INVENTORY_SIZE)))) {
                     return true;
                 }
             }
-            i++;
         }
 
         return false;

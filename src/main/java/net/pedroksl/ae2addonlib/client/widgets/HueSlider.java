@@ -3,7 +3,7 @@ package net.pedroksl.ae2addonlib.client.widgets;
 import java.awt.*;
 import java.util.function.Consumer;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.pedroksl.ae2addonlib.util.Colors;
 
 import appeng.client.Point;
@@ -33,7 +33,7 @@ public class HueSlider extends AddonSlider {
     }
 
     @Override
-    protected void renderWidget(GuiGraphics guiGraphics, Point topLeft, Point mouse) {
+    protected void renderWidget(GuiGraphicsExtractor guiGraphics, Point topLeft, Point mouse) {
         var minX = topLeft.getX();
         var minY = topLeft.getY();
         var w = this.width;
@@ -54,9 +54,9 @@ public class HueSlider extends AddonSlider {
         var handleX = minX + (int) (this.value * (double) (this.width - 1));
         var handleY = minY - 1;
         var handleMaxY = handleY + h + 1;
-        guiGraphics.hLine(handleX - 1, handleX + 1, handleY, Color.WHITE.getRGB());
-        guiGraphics.hLine(handleX - 1, handleX + 1, handleMaxY, Color.WHITE.getRGB());
-        guiGraphics.vLine(handleX - 1, handleY, handleMaxY, Color.WHITE.getRGB());
-        guiGraphics.vLine(handleX + 1, handleY, handleMaxY, Color.WHITE.getRGB());
+        guiGraphics.horizontalLine(handleX - 1, handleX + 1, handleY, Color.WHITE.getRGB());
+        guiGraphics.horizontalLine(handleX - 1, handleX + 1, handleMaxY, Color.WHITE.getRGB());
+        guiGraphics.verticalLine(handleX - 1, handleY, handleMaxY, Color.WHITE.getRGB());
+        guiGraphics.verticalLine(handleX + 1, handleY, handleMaxY, Color.WHITE.getRGB());
     }
 }

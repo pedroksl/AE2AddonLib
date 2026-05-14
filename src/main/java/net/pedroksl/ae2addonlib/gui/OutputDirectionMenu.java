@@ -9,16 +9,17 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 import net.pedroksl.ae2addonlib.api.IDirectionalOutputHost;
-import net.pedroksl.ae2addonlib.network.clientPacket.OutputDirectionUpdatePacket;
+import net.pedroksl.ae2addonlib.core.network.clientPacket.OutputDirectionUpdatePacket;
 import net.pedroksl.ae2addonlib.registry.helpers.LibMenus;
 
 import appeng.api.orientation.RelativeSide;
 import appeng.menu.AEBaseMenu;
 import appeng.menu.ISubMenu;
 import appeng.menu.MenuOpener;
+import appeng.menu.guisync.ClientActionKey;
 import appeng.menu.locator.MenuHostLocator;
 
 /**
@@ -31,8 +32,8 @@ public class OutputDirectionMenu extends AEBaseMenu implements ISubMenu {
 
     private final IDirectionalOutputHost host;
 
-    private static final String CLEAR = "clearSides";
-    private static final String UPDATE_SIDES = "updateSides";
+    private static final ClientActionKey<Void> CLEAR = new ClientActionKey<>("clearSides");
+    private static final ClientActionKey<RelativeSide> UPDATE_SIDES = new ClientActionKey<>("updateSides");
 
     /**
      * Default constructor called when AE2 first initializes menus before configuring the instance.
@@ -57,7 +58,7 @@ public class OutputDirectionMenu extends AEBaseMenu implements ISubMenu {
         this.host = host;
 
         registerClientAction(CLEAR, this::clearSides);
-        registerClientAction(UPDATE_SIDES, RelativeSide.class, this::updateSideStatus);
+        registerClientAction(UPDATE_SIDES, NeoForgeStreamCodecs.enumCodec(RelativeSide.class), this::updateSideStatus);
     }
 
     @Override
@@ -97,11 +98,7 @@ public class OutputDirectionMenu extends AEBaseMenu implements ISubMenu {
         BlockState blockState = level.getBlockState(blockPos);
         if (!blockState.isAir()) {
             return blockState.getCloneItemStack(
-                    new BlockHitResult(
-                            blockPos.getCenter().relative(dir.getOpposite(), 0.5), dir.getOpposite(), blockPos, false),
-                    level,
-                    blockPos,
-                    this.getPlayerInventory().player);
+                    blockPos.relative(dir.getOpposite()), level, false, this.getPlayerInventory().player);
         } else {
             return ItemStack.EMPTY;
         }

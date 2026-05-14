@@ -2,7 +2,7 @@ package net.pedroksl.ae2addonlib.datagen;
 
 import net.minecraft.data.PackOutput;
 import net.neoforged.neoforge.common.data.LanguageProvider;
-import net.pedroksl.ae2addonlib.AE2AddonLib;
+import net.pedroksl.ae2addonlib.core.AE2AddonLib;
 
 /**
  * The lib's language provider. Generates translation keys for the lib's text.

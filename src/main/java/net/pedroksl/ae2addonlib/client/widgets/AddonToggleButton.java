@@ -3,12 +3,13 @@ package net.pedroksl.ae2addonlib.client.widgets;
 import java.util.Collections;
 import java.util.List;
 
+import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.network.chat.Component;
 
 import appeng.client.gui.widgets.ITooltip;
 
 /**
- * Implementation of {@link appeng.client.gui.widgets.ToggleButton} that uses a {@link IBlitterIcon} instead of an {@link appeng.client.gui.Icon}.
+ * Implementation of {@link appeng.client.gui.widgets.ToggleButton} that uses a {@link IBlitterIcon} instead of an {@link appeng.util.Icon}.
  * This change opens the button to be used with custom textures.
  */
 public class AddonToggleButton extends AddonIconButton implements ITooltip {
@@ -89,7 +90,7 @@ public class AddonToggleButton extends AddonIconButton implements ITooltip {
     }
 
     @Override
-    public void onPress() {
+    public void onPress(InputWithModifiers input) {
         this.listener.onChange(!state);
     }
 

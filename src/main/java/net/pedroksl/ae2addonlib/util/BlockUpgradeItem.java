@@ -1,5 +1,7 @@
 package net.pedroksl.ae2addonlib.util;
 
+import static net.minecraft.world.level.block.entity.BlockEntity.loadStatic;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
@@ -38,7 +40,7 @@ public class BlockUpgradeItem extends AEBaseItem {
         world.removeBlock(pos, false);
         world.setBlock(pos, newBlock, 3);
         world.setBlockEntity(newTile);
-        newTile.loadWithComponents(contents, world.registryAccess());
+        loadStatic(pos, newBlock, contents, world.registryAccess());
         if (newTile instanceof AEBaseBlockEntity aeTile) {
             aeTile.markForUpdate();
         } else {

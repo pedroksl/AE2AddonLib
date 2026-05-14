@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 import com.google.common.primitives.Longs;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 
 import appeng.api.stacks.AEFluidKey;
@@ -65,7 +65,6 @@ public class NumberTextField extends ConfirmableTextField {
         setBordered(false);
         setMaxLength(25);
         setTextColor(16777215);
-        setSelectionColor(-16777088);
         setVisible(true);
         setResponder(text -> this.validate());
         setOnConfirm(() -> {
@@ -163,10 +162,10 @@ public class NumberTextField extends ConfirmableTextField {
     }
 
     @Override
-    public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partial) {
-        super.renderWidget(guiGraphics, mouseX, mouseY, partial);
+    public void extractWidgetRenderState(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partial) {
+        super.extractWidgetRenderState(guiGraphics, mouseX, mouseY, partial);
         if (!isFluid) return;
-        guiGraphics.drawString(Minecraft.getInstance().font, "B", getX() + width - PADDING, getY(), TEXT_COLOR, false);
+        guiGraphics.text(Minecraft.getInstance().font, "B", getX() + width - PADDING, getY(), TEXT_COLOR, false);
     }
 
     private void validate() {
