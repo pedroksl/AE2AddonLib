@@ -89,18 +89,16 @@ public class FluidTankSlot extends AbstractWidget {
         if (content == null || fluidTexture == null || this.disableRender) return;
 
         int fluidHeight = (int) (content.getAmount() / 1000f / maxLevel * this.height);
-		var currentY = this.getY() + this.height - this.width;
-		while (fluidHeight > 0) {
-			Blitter.sprite(this.fluidTexture)
-					.dest(this.getX(), currentY, this.width, this.width)
-					.colorRgb(this.fluidTint)
-					.blit(guiGraphics);
-			currentY -= this.width;
-			fluidHeight -= this.width;
-		}
+        var currentY = this.getY() + this.height - this.width;
+        while (fluidHeight > 0) {
+            Blitter.sprite(this.fluidTexture)
+                    .dest(this.getX(), currentY, this.width, this.width)
+                    .colorRgb(this.fluidTint)
+                    .blit(guiGraphics);
+            currentY -= this.width;
+            fluidHeight -= this.width;
+        }
     }
-
-
 
     @Override
     protected void updateWidgetNarration(@NotNull NarrationElementOutput narration) {}

@@ -68,7 +68,9 @@ public interface IFluidTankHandler {
         var stack = getCarriedItem();
         if (!stack.isEmpty()) {
 
-            var handler = ItemAccess.forPlayerCursor(getServerPlayer(), getServerPlayer().containerMenu).oneByOne().getCapability(Capabilities.Fluid.ITEM);
+            var handler = ItemAccess.forPlayerCursor(getServerPlayer(), getServerPlayer().containerMenu)
+                    .oneByOne()
+                    .getCapability(Capabilities.Fluid.ITEM);
             if (handler != null) {
 
                 var tank = getTank();
