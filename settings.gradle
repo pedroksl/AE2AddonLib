@@ -2,6 +2,21 @@ import org.gradle.api.initialization.resolve.RepositoriesMode
 import org.gradle.api.initialization.resolve.RulesMode
 
 pluginManagement {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        gradlePluginPortal()
+        maven {
+            name = 'cursemaven'
+            url = 'https://www.cursemaven.com'
+            content {
+                includeGroup 'curse.maven'
+            }
+        }
+        maven {
+            url = 'https://maven.firstdark.dev/releases'
+        }
+    }
     plugins {
         id 'com.diffplug.spotless' version '8.4.0'
         // https://projects.neoforged.net/neoforged/ModDevGradle
@@ -18,8 +33,6 @@ plugins {
 }
 
 dependencyResolutionManagement {
-    //repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
-    rulesMode = RulesMode.FAIL_ON_PROJECT_RULES
     repositories {
         maven {
             name = 'cursemaven'

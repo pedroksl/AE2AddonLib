@@ -3,13 +3,12 @@ plugins {
     id 'maven-publish'
     id 'net.neoforged.moddev'
     id 'com.diffplug.spotless'
-    //id 'com.hypherionmc.modutils.modpublisher'
+    id "com.hypherionmc.modutils.modpublisher" version '2.2.1'
     id 'com.vanniktech.maven.publish'
 }
 
-import com.diffplug.gradle.spotless.JsonExtension
 import com.diffplug.spotless.LineEnding
-//import com.hypherionmc.modpublisher.properties.ModLoader
+import com.hypherionmc.modpublisher.properties.ModLoader
 
 version = mod_version
 group = mod_group_id
@@ -197,7 +196,7 @@ idea {
     }
 }
 
-/*publisher {
+publisher {
     apiKeys {
         // Modrinth Token
         modrinth System.getenv("MODRINTH_TOKEN")
@@ -207,7 +206,7 @@ idea {
         github System.getenv("GITHUB_TOKEN")
     }
 
-    setDebug(false)
+    setDebug(true)
 
     setCurseID("1366135")
     //setModrinthID("rxYaglEe")
@@ -243,13 +242,13 @@ idea {
     modrinthDepends {
         required "ae2"
     }
-} */
+}
 
 spotless {
     java {
         target '/src/*/java/**/*.java'
         endWithNewline()
-        indentWithTabs(1)
+        leadingSpacesToTabs(4)
         removeUnusedImports()
         palantirJavaFormat()
         toggleOffOn()
@@ -262,13 +261,8 @@ spotless {
     json {
         target 'src/*/resources/**/*.json'
         targetExclude 'src/generated/resources/**'
-        var biomeConfig = it.new JsonExtension.BiomeJson(null)
-        try {
-            biomeConfig.downloadDir(new File(rootDir, ".gradle/biome").absolutePath)
-        } catch (Exception ignored) {
-        }
-        addStep(biomeConfig.createStep())
-        indentWithSpaces(2)
+        biome().downloadDir(new File(rootDir, ".gradle/biome").absolutePath)
+        leadingTabsToSpaces(4)
         endWithNewline()
         setLineEndings(LineEnding.UNIX)
     }

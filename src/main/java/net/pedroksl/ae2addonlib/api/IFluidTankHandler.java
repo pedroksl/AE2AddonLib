@@ -40,12 +40,6 @@ public interface IFluidTankHandler {
     ItemStack getCarriedItem();
 
     /**
-     * Setter for the carried item.
-     * @param stack The carried item.
-     */
-    void setCarriedItem(ItemStack stack);
-
-    /**
      * Getter for the tank.
      * @return The tank.
      */
@@ -74,7 +68,7 @@ public interface IFluidTankHandler {
         var stack = getCarriedItem();
         if (!stack.isEmpty()) {
 
-            var handler = ItemAccess.forStack(stack).oneByOne().getCapability(Capabilities.Fluid.ITEM);
+            var handler = ItemAccess.forPlayerCursor(getServerPlayer(), getServerPlayer().containerMenu).oneByOne().getCapability(Capabilities.Fluid.ITEM);
             if (handler != null) {
 
                 var tank = getTank();
@@ -92,8 +86,8 @@ public interface IFluidTankHandler {
                         var extracted = Math.min(genStack.amount(), FluidType.BUCKET_VOLUME);
 
                         try (var tx = Transaction.openRoot()) {
-                            int inserted = 0;
-                            if ((inserted = handler.insert(FluidResource.of(fluid), (int) extracted, tx)) == 0) {
+                            int inserted = handler.insert(FluidResource.of(fluid), (int) extracted, tx);
+                            if (inserted == 0) {
                                 return;
                             }
 
@@ -118,9 +112,8 @@ public interface IFluidTankHandler {
                     var genStack = GenericStack.fromFluidStack(fluid);
                     if (genStack != null && genStack.what() != null) {
                         try (var tx = Transaction.openRoot()) {
-                            int extracted = 0;
-                            if ((extracted = handler.extract(FluidResource.of(fluid), FluidType.BUCKET_VOLUME, tx))
-                                    == 0) {
+                            int extracted = handler.extract(FluidResource.of(fluid), FluidType.BUCKET_VOLUME, tx);
+                            if (extracted == 0) {
                                 return;
                             }
 
