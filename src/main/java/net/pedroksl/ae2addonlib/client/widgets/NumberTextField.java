@@ -20,6 +20,7 @@ import appeng.api.stacks.AEFluidKey;
 import appeng.api.stacks.AEKey;
 import appeng.client.gui.MathExpressionParser;
 import appeng.client.gui.NumberEntryType;
+import appeng.client.gui.style.PaletteColor;
 import appeng.client.gui.style.ScreenStyle;
 import appeng.client.gui.widgets.ConfirmableTextField;
 import appeng.core.localization.GuiText;
@@ -31,8 +32,8 @@ public class NumberTextField extends ConfirmableTextField {
 
     private static final int PADDING = 10;
 
-    private static final int TEXT_COLOR = 0xFF_FFFF;
-    private static final int ERROR_COLOR = 0xFF_0000;
+    private final int TEXT_COLOR;
+    private final int ERROR_COLOR;
 
     private final DecimalFormat decimalFormat;
     private NumberEntryType type = NumberEntryType.UNITLESS;
@@ -57,6 +58,9 @@ public class NumberTextField extends ConfirmableTextField {
             ScreenStyle style, int x, int y, int width, int height, Consumer<Long> onConfirm, Component tooltip) {
         super(style, Minecraft.getInstance().font, x, y, width, height);
 
+        this.TEXT_COLOR = style.getColor(PaletteColor.TEXTFIELD_TEXT).toARGB();
+        this.ERROR_COLOR = style.getColor(PaletteColor.TEXTFIELD_ERROR).toARGB();
+
         this.decimalFormat = new DecimalFormat("#.######", new DecimalFormatSymbols());
         this.decimalFormat.setParseBigDecimal(true);
         this.decimalFormat.setNegativePrefix("-");
@@ -64,7 +68,6 @@ public class NumberTextField extends ConfirmableTextField {
 
         setBordered(false);
         setMaxLength(25);
-        setTextColor(16777215);
         setVisible(true);
         setResponder(text -> this.validate());
         setOnConfirm(() -> {
@@ -134,10 +137,23 @@ public class NumberTextField extends ConfirmableTextField {
      * @param value The new long value.
      */
     public void setLongValue(long value) {
+        setLongValue(value, true);
+    }
+
+    /**
+     * Setter for the current value from a long value.
+     * @param value The new long value.
+     * @param select Used to decide if the content should be highlighted after editing
+     */
+    public void setLongValue(long value, boolean select) {
         this.lastLongValue = value;
         var internalValue = convertToInternalValue(Longs.constrainToRange(value, minValue, maxValue));
         setValue(decimalFormat.format(internalValue));
-        moveCursorToEnd(false);
+        if (!select) {
+            moveCursorToStart(false);
+        } else {
+            moveCursorToEnd(false);
+        }
         setHighlightPos(0);
         validate();
     }
