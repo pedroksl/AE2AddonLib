@@ -1,2 +1,3 @@
 - Fixed Fluid Tank Slot rendering
-- Fixed Fluid Tank Slot player interaction
+- Fixed Output direction screen render
+- Fixed NumberTextField text opacity and selection behavior
