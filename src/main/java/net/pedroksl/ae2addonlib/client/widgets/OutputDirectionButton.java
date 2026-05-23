@@ -1,12 +1,14 @@
 package net.pedroksl.ae2addonlib.client.widgets;
 
+import org.jetbrains.annotations.NotNull;
+
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.WidgetSprites;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.ARGB;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.pedroksl.ae2addonlib.client.screens.OutputDirectionScreen;
 import net.pedroksl.ae2addonlib.datagen.LibText;
@@ -14,18 +16,24 @@ import net.pedroksl.ae2addonlib.datagen.LibText;
 import appeng.api.orientation.RelativeSide;
 import appeng.core.AppEng;
 
+import guideme.internal.util.Blitter;
+
 /**
  * Specific button type used in {@link OutputDirectionScreen} to provide
  * Enable/Disable behavior and render the related tile entity.
  */
 public class OutputDirectionButton extends Button {
 
+    protected final Identifier buttonTexture = AppEng.makeId("textures/guis/states.png");
     protected static final WidgetSprites SPRITES = new WidgetSprites(
             AppEng.makeId("button"), AppEng.makeId("button_disabled"), AppEng.makeId("button_highlighted"));
     private ItemStack item;
 
     private RelativeSide side;
     private boolean enabled = false;
+
+    private static final Rect2i DISABLED_BBOX = new Rect2i(176, 128, 256, 256);
+    private static final Rect2i ENABLED_BBOX = new Rect2i(194, 128, 256, 256);
 
     /**
      * Constructs an output direction button with initial values.
@@ -73,19 +81,23 @@ public class OutputDirectionButton extends Button {
     }
 
     @Override
-    protected void extractContents(
-            GuiGraphicsExtractor guiGraphicsExtractor, int pMouseX, int pMouseY, float pPartialTick) {
-        guiGraphicsExtractor.blitSprite(
-                RenderPipelines.GUI_TEXTURED,
-                SPRITES.get(enabled, this.isHovered()),
-                this.getX(),
-                this.getY(),
-                this.getWidth(),
-                this.getHeight(),
-                ARGB.white(alpha));
+    protected void extractContents(GuiGraphicsExtractor guiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
+
+        if (enabled) {
+            blit(guiGraphics, ENABLED_BBOX);
+        } else {
+            blit(guiGraphics, DISABLED_BBOX);
+        }
 
         if (item != null) {
-            guiGraphicsExtractor.fakeItem(item, this.getX() + 1, this.getY() + 1);
+            guiGraphics.fakeItem(item, this.getX() + 1, this.getY() + 1);
         }
+    }
+
+    private void blit(@NotNull GuiGraphicsExtractor guiGraphics, Rect2i bbox) {
+        Blitter.texture(buttonTexture)
+                .src(bbox.getX(), bbox.getY(), this.getWidth(), this.getHeight())
+                .dest(this.getX(), this.getY(), width, height)
+                .blit(guiGraphics);
     }
 }
