@@ -67,7 +67,7 @@ public class FluidTankSlot extends AbstractWidget {
     public void onClick(@NotNull MouseButtonEvent event, boolean doubleClick) {
         var stack = screen.getMenu().getCarried();
         if (isValidClickButton(event.button()) && !stack.isEmpty()) {
-            if (!FluidUtil.getFirstStackContained(stack).isEmpty()) {
+            if (!stack.isEmpty()) {
                 FluidStack fluidStack = FluidUtil.getFirstStackContained(stack);
                 if (fluidStack.is(this.content.getFluid()) || fluidStack.isEmpty() || this.content.isEmpty()) {
                     var actualButton = screen instanceof AEBaseScreen<?> baseScreen
@@ -89,14 +89,15 @@ public class FluidTankSlot extends AbstractWidget {
         if (content == null || fluidTexture == null || this.disableRender) return;
 
         int fluidHeight = (int) (content.getAmount() / 1000f / maxLevel * this.height);
-        var currentY = this.getY() + this.height - this.width;
+        var currentY = this.getY() + this.height;
         while (fluidHeight > 0) {
+            int currentHeight = Math.min(this.width, fluidHeight);
+            currentY -= currentHeight;
             Blitter.sprite(this.fluidTexture)
-                    .dest(this.getX(), currentY, this.width, this.width)
+                    .dest(this.getX(), currentY, this.width, currentHeight)
                     .colorRgb(this.fluidTint)
                     .blit(guiGraphics);
-            currentY -= this.width;
-            fluidHeight -= this.width;
+            fluidHeight -= currentHeight;
         }
     }
 
