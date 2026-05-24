@@ -206,7 +206,7 @@ publisher {
         github System.getenv("GITHUB_TOKEN")
     }
 
-    setDebug(true)
+    setDebug(false)
 
     setCurseID("1366135")
     //setModrinthID("rxYaglEe")

@@ -1,3 +1,1 @@
-- Fixed Fluid Tank Slot rendering
-- Fixed Output direction screen render
-- Fixed NumberTextField text opacity and selection behavior
+- Fixed Client classes present in FluidType definition class
