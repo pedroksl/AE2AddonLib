@@ -1,12 +1,13 @@
 package net.pedroksl.ae2addonlib.util;
 
-import static net.minecraft.world.level.block.entity.BlockEntity.loadStatic;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.pedroksl.ae2addonlib.core.AE2AddonLib;
 
 import appeng.blockentity.AEBaseBlockEntity;
 import appeng.items.AEBaseItem;
@@ -40,7 +41,10 @@ public class BlockUpgradeItem extends AEBaseItem {
         world.removeBlock(pos, false);
         world.setBlock(pos, newBlock, 3);
         world.setBlockEntity(newTile);
-        loadStatic(pos, newBlock, contents, world.registryAccess());
+        try (ProblemReporter.ScopedCollector reporter =
+                new ProblemReporter.ScopedCollector(newTile.problemPath(), AE2AddonLib.LOGGER)) {
+            newTile.loadWithComponents(TagValueInput.create(reporter, world.registryAccess(), contents));
+        }
         if (newTile instanceof AEBaseBlockEntity aeTile) {
             aeTile.markForUpdate();
         } else {

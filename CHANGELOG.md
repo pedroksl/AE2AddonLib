@@ -1,1 +1,1 @@
-- Fixed Client classes present in FluidType definition class
+- Fixed upgrade item deleting nbt data

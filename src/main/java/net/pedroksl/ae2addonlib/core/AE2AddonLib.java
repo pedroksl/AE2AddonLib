@@ -1,5 +1,9 @@
 package net.pedroksl.ae2addonlib.core;
 
+import com.mojang.logging.LogUtils;
+
+import org.slf4j.Logger;
+
 import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.InterModComms;
@@ -22,6 +26,8 @@ public class AE2AddonLib {
      * A static instance of this lib's main class.
      */
     public static AE2AddonLib INSTANCE;
+
+    public static final Logger LOGGER = LogUtils.getLogger();
 
     /**
      * The lib's constructor.
