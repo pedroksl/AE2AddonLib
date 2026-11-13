@@ -133,7 +133,7 @@ public class AddonSettingToggleButton<T extends Enum<T>> extends AddonIconButton
 
     private void triggerPress() {
         boolean backwards = false;
-        Screen currentScreen = Minecraft.getInstance().screen;
+        Screen currentScreen = Minecraft.getInstance().gui.screen();
         if (currentScreen instanceof AEBaseScreen) {
             backwards = ((AEBaseScreen<?>) currentScreen).isHandlingRightClick();
         }

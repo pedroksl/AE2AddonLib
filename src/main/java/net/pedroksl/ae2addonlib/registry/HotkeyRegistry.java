@@ -7,9 +7,9 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.logging.LogUtils;
 
-import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 
 import net.minecraft.world.level.ItemLike;
@@ -111,7 +111,7 @@ public class HotkeyRegistry {
         try {
             return HOTKEY_GETTER.get(modId).apply(id);
         } catch (IllegalArgumentException ignored) {
-            return GLFW.GLFW_KEY_UNKNOWN;
+            return InputConstants.UNKNOWN.getValue();
         }
     }
 }

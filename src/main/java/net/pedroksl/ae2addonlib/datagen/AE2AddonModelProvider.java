@@ -194,7 +194,7 @@ public abstract class AE2AddonModelProvider extends ModelSubProvider {
         var namespace = block.id().getNamespace();
         var blockName = block.id().getPath();
 
-        var orientedModel = TexturedModel.CUBE_TOP_BOTTOM
+        var orientedModel = TexturedModel.CUBE_BOTTOM_TOP
                 .updateTexture(textures -> textures.put(
                                 TextureSlot.SIDE,
                                 new Material(Identifier.fromNamespaceAndPath(namespace, "block/" + blockName + "_alt")))

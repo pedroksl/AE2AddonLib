@@ -3,6 +3,8 @@ package net.pedroksl.ae2addonlib.client;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.mojang.blaze3d.platform.InputConstants;
+
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.KeyMapping;
@@ -42,7 +44,8 @@ public class Hotkeys {
         if (finalized) {
             throw new IllegalStateException("Hotkey registration already finalized!");
         }
-        return new AddonHotkey(modId, id, new KeyMapping("key." + modId + "." + id, defaultHotkey, this.category));
+        int key = defaultHotkey < 0 ? InputConstants.UNKNOWN.getValue() : defaultHotkey;
+        return new AddonHotkey(modId, id, new KeyMapping("key." + modId + "." + id, key, this.category));
     }
 
     private void registerHotkey(AddonHotkey hotkey) {

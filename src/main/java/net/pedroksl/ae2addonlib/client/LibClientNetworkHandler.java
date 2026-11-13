@@ -20,20 +20,20 @@ public class LibClientNetworkHandler extends ClientNetworkHandler {
 
     public void handleFluidTankClientAudioPacket(
             FluidTankClientAudioPacket packet, Minecraft minecraft, Player player) {
-        if (Minecraft.getInstance().screen instanceof IFluidTankScreen screen) {
+        if (Minecraft.getInstance().gui.screen() instanceof IFluidTankScreen screen) {
             IFluidTankScreen.playDownSound(packet.isInsert());
         }
     }
 
     public void handleFluidTanStackUpdatePacket(FluidTankStackUpdatePacket packet, Minecraft minecraft, Player player) {
-        if (Minecraft.getInstance().screen instanceof IFluidTankScreen screen) {
+        if (Minecraft.getInstance().gui.screen() instanceof IFluidTankScreen screen) {
             screen.updateFluidTankContents(packet.index(), packet.stack());
         }
     }
 
     public void handleOutputDirectionUpdatePacket(
             OutputDirectionUpdatePacket packet, Minecraft minecraft, Player player) {
-        if (Minecraft.getInstance().screen instanceof OutputDirectionScreen screen) {
+        if (Minecraft.getInstance().gui.screen() instanceof OutputDirectionScreen screen) {
             screen.update(packet.sides());
         }
     }
