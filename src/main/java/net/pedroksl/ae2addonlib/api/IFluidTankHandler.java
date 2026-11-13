@@ -1,6 +1,6 @@
 package net.pedroksl.ae2addonlib.api;
 
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.BucketItem;
@@ -77,7 +77,7 @@ public interface IFluidTankHandler {
                 if (tank == null) return;
 
                 boolean isBucket = stack.getItem() instanceof BucketItem;
-                if ((!isBucket && button == GLFW.GLFW_MOUSE_BUTTON_LEFT)
+                if ((!isBucket && button == InputConstants.MOUSE_BUTTON_LEFT)
                         || (isBucket && ((BucketItem) stack.getItem()).content == Fluids.EMPTY)) {
                     if (!canExtractFromTank(index)) return;
 

@@ -1,8 +1,9 @@
 package net.pedroksl.ae2addonlib.client.widgets;
 
+import com.mojang.blaze3d.platform.InputConstants;
+
 import org.apache.commons.lang3.text.WordUtils;
 import org.jetbrains.annotations.NotNull;
-import org.lwjgl.glfw.GLFW;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -72,7 +73,7 @@ public class FluidTankSlot extends AbstractWidget {
                 if (fluidStack.is(this.content.getFluid()) || fluidStack.isEmpty() || this.content.isEmpty()) {
                     var actualButton = screen instanceof AEBaseScreen<?> baseScreen
                             ? (baseScreen.isHandlingRightClick() ? 1 : 0)
-                            : event.button();
+                            : (event.button() == InputConstants.MOUSE_BUTTON_RIGHT ? 1 : 0);
                     ClientPacketDistributor.sendToServer(new FluidTankItemUsePacket(this.index, actualButton));
                 }
             }
@@ -80,7 +81,7 @@ public class FluidTankSlot extends AbstractWidget {
     }
 
     public boolean isValidClickButton(int button) {
-        return button == GLFW.GLFW_MOUSE_BUTTON_LEFT || button == GLFW.GLFW_MOUSE_BUTTON_RIGHT;
+        return button == InputConstants.MOUSE_BUTTON_LEFT || button == InputConstants.MOUSE_BUTTON_RIGHT;
     }
 
     @Override

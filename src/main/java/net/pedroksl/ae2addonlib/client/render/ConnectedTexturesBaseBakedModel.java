@@ -242,7 +242,6 @@ public abstract class ConnectedTexturesBaseBakedModel implements DynamicBlockSta
         var builder = new QuadBakingVertexConsumer();
         builder.setSprite(this.face);
         builder.setDirection(side);
-        builder.setShade(true);
         this.putVertex(builder, this.face, normal, c1.x(), c1.y(), c1.z(), 0, 0);
         this.putVertex(builder, this.face, normal, c2.x(), c2.y(), c2.z(), 0, 1);
         this.putVertex(builder, this.face, normal, c3.x(), c3.y(), c3.z(), 1, 1);
@@ -258,7 +257,6 @@ public abstract class ConnectedTexturesBaseBakedModel implements DynamicBlockSta
             var texture = this.faceAnimations.get(side);
             builder.setSprite(texture);
             builder.setDirection(side);
-            builder.setShade(true);
             this.putVertex(builder, texture, normal, c1.x(), c1.y(), c1.z(), 0, 0);
             this.putVertex(builder, texture, normal, c2.x(), c2.y(), c2.z(), 0, 1);
             this.putVertex(builder, texture, normal, c3.x(), c3.y(), c3.z(), 1, 1);
@@ -288,7 +286,6 @@ public abstract class ConnectedTexturesBaseBakedModel implements DynamicBlockSta
         var texture = powered ? this.poweredSides : this.corners;
         builder.setSprite(texture);
         builder.setDirection(side);
-        builder.setShade(true);
         var normal = side.getUnitVec3i();
         var c1 = renderOpposite ? cons.get(3) : cons.get(0);
         var c2 = renderOpposite ? cons.get(2) : cons.get(1);

@@ -3,9 +3,9 @@ package net.pedroksl.ae2addonlib.client.widgets;
 import java.awt.*;
 import java.util.function.BiConsumer;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 
 import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fc;
